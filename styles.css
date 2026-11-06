@@ -412,3 +412,4 @@ select.own{border:1px solid var(--line2);border-radius:7px;padding:4px 6px;font:
 .wbtns{display:flex;flex-direction:column;gap:8px;margin-bottom:6px}
 @media (max-width:760px){.outs{grid-template-columns:1fr 1fr}.live .btn.esc{padding:7px 10px}.tier{font-size:11px}}
 @media (max-width:760px){.card>table.t,.card .t{display:block;overflow-x:auto}.card{max-width:100%}}
+@media (max-width:760px){.utr{flex-wrap:wrap}.utr .bar2{width:100%}}

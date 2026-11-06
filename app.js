@@ -27,6 +27,7 @@ const tierOf = s => s >= 7 ? ['Urgent', 'urg'] : s >= 3 ? ['Today', 'tod'] : s >
 const tier = p => { const [l, c] = tierOf(p.score); return `<button class="tier ${c}" data-act="score" data-id="${p.id}" title="Tap for the maths">${l}<b>${p.score.toFixed(1)}</b></button>`; };
 const TIERS = `<div class="tiers"><span class="tier urg">Urgent<b>7+</b></span><span class="tier tod">Today<b>3–7</b></span><span class="tier wk">This week<b>2–3</b></span><span class="tier rt">Routine<b>&lt;2</b></span></div>`;
 const SCOREX = `<p style="margin:0 0 6px"><b>Priority = how serious × how soon × chance of reaching them today</b></p><p class="dim" style="margin:0;font-size:12px">How serious 1–5 · How soon 1–3 (a deadline within 3 days = 3) · Reach 0.5–1 (never 0, so hard-to-reach members stay on the list). Dorothy: 5 × 3 × 0.8 = 12.0.</p>${TIERS}`;
+const when = bt => /\d|morning|afternoon|midday|evening|lunch|after/i.test(bt) ? bt : 'later';
 const OUT = { na: 'No answer', vm: 'Left voicemail', wrong: 'Wrong number' };
 const OWNERS = ['Maria', 'Pharmacist', 'Social worker', 'Community health worker', "Doctor's office", 'BH counsellor'];
 const DOB = { P1: '14 Mar 1948', P2: '2 Jun 1965', P3: '21 Jan 1992', P4: '9 Sep 1979', P5: '30 Jan 1942' };
@@ -274,7 +275,7 @@ function live(p) {
       <div class="gh" style="margin-top:12px">Suggested next move</div><div class="nexts">
         ${textable ? `<button class="btn" data-act="sms">${ico('msg')}Send callback text</button>` : `<span class="chip g">${ico('lock')}No text consent</span>`}
         ${other ? `<button class="btn" data-act="dial" data-n="${esc(other.number)}">${ico('phone')}Try ${esc(other.owner.split(' ')[0].replace(/[(),]/g, ''))} · ${esc(other.number)}</button>` : ''}
-        <button class="btn" data-act="retry">${ico('clock')}Retry ${esc(c.bestTime)} · add task</button>
+        <button class="btn" data-act="retry">${ico('clock')}Retry ${esc(when(c.bestTime))} · add task</button>
         <button class="btn ghost" data-act="next">Next member ${ico('arrow')}</button></div>
       <div class="utr"><div class="bar2"><i style="width:${Math.min(n, 4) / 4 * 100}%;background:${n >= 4 ? 'var(--orange)' : 'var(--navy2)'}"></i></div><span>${n} of 4 attempts before the case goes to “unable to reach” review. A new number or a text resets the clock.</span></div></div></div>`;
   }
@@ -565,7 +566,7 @@ function onClick(e) {
     outc: () => { if (d.v === 'yes') { S.conn[p.id] = 'yes'; S.start[p.id] = Date.now(); render(true); return; }
       const num = S.dial[p.id] || [...p.contacts].sort((a, b) => a.rank - b.rank).find(c => !/Disconnected|Locked/.test(c.status)).number;
       (S.att[p.id] ||= []).push({ at: clock(), num, out: d.v }); if (d.v === 'wrong') S.dead[num] = true; S.conn[p.id] = 'no'; render(true); toast('Attempt logged'); },
-    retry: () => { const c = [...p.contacts].sort((a, b) => a.rank - b.rank)[0]; S.tasks.push({ task: `Retry call to ${first(p)} (${c.bestTime})`, owner: 'Maria', due: c.bestTime, pid: p.id, done: false, from: 'Attempt' }); toast('Retry task added'); },
+    retry: () => { const c = [...p.contacts].sort((a, b) => a.rank - b.rank)[0]; S.tasks.push({ task: `Retry call to ${first(p)} (${when(c.bestTime)})`, owner: 'Maria', due: when(c.bestTime) === 'later' ? 'Today' : c.bestTime, pid: p.id, done: false, from: 'Attempt' }); toast('Retry task added'); },
     idv: () => { (S.idv[p.id] ||= {})[d.k] = t.checked; render(true); },
     with: () => { (S.idv[p.id] ||= {}).with = d.v; render(true); },
     interp: () => { S.interp[p.id] = true; render(true); toast('Spanish interpreter added to the call'); },
