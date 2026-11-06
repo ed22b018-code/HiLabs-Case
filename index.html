@@ -2,61 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Case Management Workbench · concept prototype</title>
-<meta name="description" content="Concept prototype for the HiLabs APM case study: a case-management workbench with a ranked daily queue, source-cited signals, and human-signed AI drafts. All data is synthetic.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Care Workbench · concept prototype</title>
+<meta name="description" content="Concept prototype for the HiLabs APM case: a case-management workbench with a ranked worklist, source-cited alerts and a guided call flow. All data is synthetic.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A1F4F'/%3E%3Cpath d='M9 22V10m14 12V10M9 16h14' stroke='%23F39C34' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 </head>
 <body>
+<nav class="rail" id="rail">
+  <div class="logo" title="Care Workbench"><svg viewBox="0 0 32 32"><path d="M9 22V10m14 12V10M9 16h14" stroke="#F39C34" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg></div>
+  <a data-nav="today" href="#today"><svg class="i"><use href="#i-list"/></svg><span>Today</span></a>
+  <a data-nav="tasks" href="#tasks"><svg class="i"><use href="#i-tasks"/></svg><span>Tasks</span><b class="badge" id="taskBadge" hidden></b></a>
+  <a data-nav="insights" href="#insights"><svg class="i"><use href="#i-chart"/></svg><span>Insights</span></a>
+</nav>
 <header class="top">
-  <div class="brand"><span class="logo"><svg viewBox="0 0 32 32"><path d="M9 22V10m14 12V10M9 16h14" stroke="#F39C34" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg></span>
-    <div><b>Case Workbench</b><small>Concept prototype · HiLabs APM case study</small></div></div>
-  <div class="banner"><span class="pill syn">SYNTHETIC DATA</span><span>Monday 9 Nov 2026 · 08:00</span><span class="sep"></span><span>Signed in as <b>Maria R., RN, CCM</b> · 48 active cases</span></div>
-  <div class="topact">
-    <label class="switch" title="Reveal the 24 data flaws deliberately planted in the synthetic records"><input type="checkbox" id="flawToggle"><span></span>Show planted flaws</label>
-    <button class="btn orange" data-act="tour-start"><svg class="i"><use href="#i-play"/></svg>5-min tour</button>
-  </div>
+  <div class="brand"><b>Care Workbench</b><span class="tag">Concept · synthetic data</span></div>
+  <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="search" placeholder="Search members" autocomplete="off"><div class="results" id="results" hidden></div></div>
+  <div class="when"><svg class="i"><use href="#i-clock"/></svg>Mon 9 Nov · 08:00</div>
+  <div class="me" title="Maria R., RN, CCM · 48 active cases">MR</div>
 </header>
-<div class="shell">
-  <nav class="side" id="side">
-    <a data-nav="today" href="#today"><svg class="i"><use href="#i-list"/></svg><span>Today</span><em>Ranked queue</em></a>
-    <a data-nav="member" href="#member"><svg class="i"><use href="#i-user"/></svg><span>Member 360</span><em>Signals · conflicts · timeline</em></a>
-    <a data-nav="prep" href="#prep"><svg class="i"><use href="#i-phone"/></svg><span>Call prep</span><em>Who, when, what to ask</em></a>
-    <a data-nav="doc" href="#doc"><svg class="i"><use href="#i-file"/></svg><span>Document</span><em>Draft, review, sign once</em></a>
-    <a data-nav="how" href="#how"><svg class="i"><use href="#i-layers"/></svg><span>How it works</span><em>Rules · AI · 24 flaws</em></a>
-    <div class="sidecard" id="sidecard"></div>
-    <div class="sidefoot">Every fact on screen cites a record ID from the Excel annex. Click any <span class="rec static">ID</span> to see it.</div>
-  </nav>
-  <main id="main"><div class="loading">Loading Monday's queue…</div></main>
+<main id="main"><div class="loading">Loading…</div></main>
+
+<div id="guide" class="guide">
+  <div class="bubble" id="bubble" hidden></div>
+  <button class="bot" id="bot" data-act="bot" aria-label="Demo guide">
+    <svg viewBox="0 0 64 64" class="botsvg" aria-hidden="true">
+      <line x1="32" y1="6" x2="32" y2="14" stroke="#9DB8F5" stroke-width="2.5" stroke-linecap="round"/>
+      <circle class="ant" cx="32" cy="6" r="3.6" fill="#F39C34"/>
+      <rect x="10" y="14" width="44" height="38" rx="13" fill="#0A1F4F" stroke="#5B8DEF" stroke-width="2"/>
+      <rect x="15" y="20" width="34" height="22" rx="9" fill="#132E6B"/>
+      <g class="eyes"><ellipse cx="25" cy="30" rx="3.6" ry="4.4" fill="#fff"/><ellipse cx="39" cy="30" rx="3.6" ry="4.4" fill="#fff"/></g>
+      <path class="mouth" d="M26 37 Q32 40.5 38 37" stroke="#2BC4B3" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+      <circle cx="10" cy="33" r="3" fill="#5B8DEF"/><circle cx="54" cy="33" r="3" fill="#5B8DEF"/>
+    </svg>
+    <span class="ping" id="ping"></span>
+  </button>
 </div>
+<div id="spot" class="spot" hidden></div>
 <div id="pop" class="pop" hidden></div>
 <div id="modal" class="modal" hidden></div>
-<div id="tour" class="tour" hidden></div>
+<div id="drawer" class="drawer" hidden></div>
 <div id="toast" class="toast" hidden></div>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
-    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
-    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></symbol>
-    <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
-    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol>
-    <symbol id="i-play" viewBox="0 0 24 24"><polygon points="7 4 20 12 7 20 7 4"/></symbol>
-    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
-    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
-    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 10.7l-5.8 1.9L12 18.4l-1.9-5.8L4 10.7l5.8-1.9z"/></symbol>
-    <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-10-8-10-8a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2M1 1l22 22"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
-    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-  </defs>
-</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 5.8L20 10.7l-5.8 1.9L12 18.4l-1.9-5.8L4 10.7l5.8-1.9z"/></symbol>
+  <symbol id="i-eyeoff" viewBox="0 0 24 24"><path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-10-8-10-8a18 18 0 0 1 5.1-5.9M9.9 4.2A9 9 0 0 1 12 4c7 0 10 8 10 8a18 18 0 0 1-2.2 3.2M1 1l22 22"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></symbol>
+  <symbol id="i-endcall" viewBox="0 0 24 24"><path d="M10.7 13.3a16 16 0 0 0 3.4 2.6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8"/><path d="M23 1 1 23"/></symbol>
+  <symbol id="i-pill" viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z"/><path d="m8.5 8.5 7 7"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+</defs></svg>
 <script src="app.js"></script>
 </body>
 </html>

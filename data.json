@@ -87,7 +87,7 @@
      ],
      "guards": [
       "No mail-order fill pending (not enrolled)",
-      "Not transferred to a SNF (no further ADT)",
+      "Not moved to a nursing home (no new hospital alert)",
       "Member still enrolled"
      ],
      "actions": [
@@ -95,7 +95,8 @@
       "Ask prescriber for an EXPEDITED coverage determination (24 h decision)",
       "Once approved: pharmacy home delivery (CB-1002)",
       "Teach-back on the new furosemide 40 mg dose"
-     ]
+     ],
+     "summary": "New heart medicine rejected at the pharmacy (needs plan approval); not filled on day 3"
     },
     {
      "code": "S3",
@@ -123,7 +124,8 @@
       "Tell Dorothy not to take lisinopril with the new heart medicine (36-hour washout required)",
       "Ask the pharmacy to cancel the lisinopril auto-refill",
       "Prescriber confirms the switch-over plan"
-     ]
+     ],
+     "summary": "Lisinopril was stopped at discharge but auto-refilled on Saturday"
     },
     {
      "code": "S2",
@@ -155,7 +157,8 @@
      "actions": [
       "Book Dr. Mercer Thu 12 Nov",
       "Book plan ride benefit (CB-1001: 12 trips left)"
-     ]
+     ],
+     "summary": "Day 3 of 7: no doctor visit booked, and her husband can no longer drive"
     }
    ],
    "suppressed": [],
@@ -540,7 +543,9 @@
     "UM-1001"
    ],
    "score": 12.0,
-   "rank": 1
+   "rank": 1,
+   "nbaShort": "Call now · fix meds",
+   "due": "Visit by Fri 13"
   },
   {
    "id": "P4",
@@ -643,7 +648,8 @@
       "Ask Marcus to sign a release for the shelter case worker",
       "Re-screen housing; update address",
       "Ask prescriber for a 30-day aripiprazole refill before 18 Nov"
-     ]
+     ],
+     "summary": "Discharged to a shelter; follow-up not booked; housing screen 9 months old"
     }
    ],
    "suppressed": [],
@@ -913,7 +919,9 @@
     "SD-4001"
    ],
    "score": 7.8,
-   "rank": 2
+   "rank": 2,
+   "nbaShort": "Text first · book Tue visit",
+   "due": "Visit by Wed 11"
   },
   {
    "id": "P5",
@@ -999,7 +1007,8 @@
       "Ask Linda how she is doing (caregiver check-in)",
       "Offer adult day programme referral (Medicaid HCBS)",
       "Ask home health about night support"
-     ]
+     ],
+     "summary": "Daughter wrote she “can't keep up” in two notes"
     },
     {
      "code": "S3",
@@ -1036,7 +1045,8 @@
      "actions": [
       "Confirm with Linda which tablets she gives (2.5 mg)",
       "Send the corrected list to Dr. Liu and the ED record"
-     ]
+     ],
+     "summary": "ER says apixaban 5 mg; pharmacy and doctor say 2.5 mg"
     },
     {
      "code": "S2",
@@ -1062,7 +1072,8 @@
       "Ask UM to expedite after the fall",
       "Book PCP within 7 days of the ED visit (by Sat 14 Nov)",
       "Request a home-safety check"
-     ]
+     ],
+     "summary": "Home-nurse approval pending 90 h; follow-up due by Saturday"
     }
    ],
    "suppressed": [
@@ -1082,7 +1093,9 @@
        "text": "Mail-order enrolled since Oct 2026"
       }
      ],
-     "instead": "Shown as a 'confirm on the call' question instead of an alarm."
+     "instead": "Shown as a 'confirm on the call' question instead of an alarm.",
+     "summary": "Refill looks 30 days late, but a 90-day mail-order box arrives tomorrow",
+     "rule": ""
     }
    ],
    "conflicts": [
@@ -1387,7 +1400,9 @@
     "UM-5001"
    ],
    "score": 7.2,
-   "rank": 3
+   "rank": 3,
+   "nbaShort": "Call Linda after 7 pm",
+   "due": "Visit by Sat 14"
   },
   {
    "id": "P3",
@@ -1489,12 +1504,13 @@
       "Call (312) 555-0158 midday",
       "Ask for text consent and best time",
       "Pause the 'unable to reach' auto-closure"
-     ]
+     ],
+     "summary": "Home number dead 4 times; a new mobile appeared in pharmacy records"
     },
     {
      "code": "S6",
      "title": "ED used as primary care",
-     "confidence": "High once identity confirmed",
+     "confidence": "Medium · until identity is confirmed",
      "measure": "AMR asthma medication ratio (0.27 vs ≥0.50)",
      "mode": "Auto-detected · Maria confirms",
      "rule": "≥3 ED visits in 90 days AND no PCP visit in 6 months",
@@ -1529,10 +1545,11 @@
       "Claims show only 1 of 3 visits: ED count taken from ADT"
      ],
      "actions": [
-      "Book PCP within 7 days using the HiLabs-verified number (312) 555-0125",
+      "Book her doctor within 7 days on the verified number (312) 555-0125",
       "Controller inhaler refill + asthma action plan",
       "Ask what happens at night (ED vs urgent care)"
-     ]
+     ],
+     "summary": "3 ER visits for asthma in 66 days; no daily inhaler since June"
     }
    ],
    "suppressed": [],
@@ -1835,7 +1852,9 @@
     "RX-3006"
    ],
    "score": 4.8,
-   "rank": 4
+   "rank": 4,
+   "nbaShort": "Confirm ID · call new mobile",
+   "due": "Auto-closes Tue"
   },
   {
    "id": "P2",
@@ -1910,7 +1929,8 @@
       "Ask why he stopped: side effects, cost, or confusion",
       "Message PCP with the reason; ask about alternatives",
       "Offer 90-day supply once settled"
-     ]
+     ],
+     "summary": "Metformin 21 days late while A1c rose from 8.1% to 9.4%"
     },
     {
      "code": "S3",
@@ -1935,7 +1955,8 @@
      "actions": [
       "Confirm on the call which tablets he has",
       "Send the reconciled list to Dr. Nair"
-     ]
+     ],
+     "summary": "Pharmacy and doctor list different metformin doses"
     }
    ],
    "suppressed": [],
@@ -2255,7 +2276,9 @@
     "SD-2001"
    ],
    "score": 3.0,
-   "rank": 5
+   "rank": 5,
+   "nbaShort": "Call 12:30 · in Spanish",
+   "due": ""
   },
   {
    "id": "S7",
@@ -2348,7 +2371,9 @@
     "RX-7001"
    ],
    "score": 2.7,
-   "rank": 6
+   "rank": 6,
+   "nbaShort": "Confirm Tue visit",
+   "due": ""
   },
   {
    "id": "S9",
@@ -2441,7 +2466,9 @@
     "RX-9001"
    ],
    "score": 2.4,
-   "rank": 7
+   "rank": 7,
+   "nbaShort": "Confirm ride for 17 Nov",
+   "due": ""
   },
   {
    "id": "S6",
@@ -2529,7 +2556,9 @@
     "RX-6001"
    ],
    "score": 2.0,
-   "rank": 8
+   "rank": 8,
+   "nbaShort": "Routine check-in",
+   "due": ""
   },
   {
    "id": "S8",
@@ -2622,7 +2651,9 @@
     "UM-8001"
    ],
    "score": 2.0,
-   "rank": 9
+   "rank": 9,
+   "nbaShort": "No action today",
+   "due": ""
   },
   {
    "id": "S10",
@@ -2710,7 +2741,9 @@
     "RX-1101"
    ],
    "score": 1.6,
-   "rank": 10
+   "rank": 10,
+   "nbaShort": "Routine check-in",
+   "due": ""
   }
  ],
  "flaws": [

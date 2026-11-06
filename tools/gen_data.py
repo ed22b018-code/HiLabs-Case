@@ -29,7 +29,7 @@ P.append(dict(
                    ev("HIE-1001", "HIE", "Discharge summary: START sacubitril/valsartan 24/26 mg BID; INCREASE furosemide to 40 mg"),
                    ev("RX-1004", "RX", "Sacubitril/valsartan REJECTED Sat 7 Nov 10:02 · NCPDP 75 Prior Authorization Required"),
                    ev("UM-1001", "UM", "No Part D coverage determination requested yet")],
-         guards=["No mail-order fill pending (not enrolled)", "Not transferred to a SNF (no further ADT)", "Member still enrolled"],
+         guards=["No mail-order fill pending (not enrolled)", "Not moved to a nursing home (no new hospital alert)", "Member still enrolled"],
          actions=["Call now: confirm exactly what she is taking", "Ask prescriber for an EXPEDITED coverage determination (24 h decision)",
                   "Once approved: pharmacy home delivery (CB-1002)", "Teach-back on the new furosemide 40 mg dose"]),
     dict(code="S3", title="Medication lists disagree: unsafe combination", confidence="High · discharge list vs. paid fill", measure="TRC · medication reconciliation",
@@ -209,13 +209,13 @@ P.append(dict(
          evidence=[ev("AT-3005", "CON", "Home line 'not in service' 4 times (12 Oct – 2 Nov)"), ev("CP-3002", "CON", "New mobile in pharmacy profile, 7 Nov")],
          guards=["Text not suggested: no consent on file (ask on first call)"],
          actions=["Call (312) 555-0158 midday", "Ask for text consent and best time", "Pause the 'unable to reach' auto-closure"]),
-    dict(code="S6", title="ED used as primary care", confidence="High once identity confirmed", measure="AMR asthma medication ratio (0.27 vs ≥0.50)",
+    dict(code="S6", title="ED used as primary care", confidence="Medium · until identity is confirmed", measure="AMR asthma medication ratio (0.27 vs ≥0.50)",
          mode="Auto-detected · Maria confirms", rule="≥3 ED visits in 90 days AND no PCP visit in 6 months",
          evidence=[ev("ADT-0010", "ADT", "ED Riverside 2 Sep"), ev("ADT-0012", "ADT", "ED County General 4 Oct"),
                    ev("ADT-0014", "ADT", "ED County General 7 Nov (new MRN: confirm match)"), ev("CLM-3000", "CLM", "Last PCP visit 12 Mar"),
                    ev("RX-3006", "RX", "5 albuterol rescue inhalers in 80 days; controller last filled 2 Jun")],
          guards=["Claims show only 1 of 3 visits: ED count taken from ADT"],
-         actions=["Book PCP within 7 days using the HiLabs-verified number (312) 555-0125", "Controller inhaler refill + asthma action plan", "Ask what happens at night (ED vs urgent care)"]),
+         actions=["Book her doctor within 7 days on the verified number (312) 555-0125", "Controller inhaler refill + asthma action plan", "Ask what happens at night (ED vs urgent care)"]),
   ],
   suppressed=[],
   conflicts=[dict(topic="PCP phone", severity="Check", a=dict(src="DIR", rec="DIR-0003", value="(312) 555-0124 Westside Clinic (plan directory)", at="—"),
@@ -500,6 +500,29 @@ FLAWS = [
  ("IMP-P5-03", "P5", "Caregiver strain only in notes", "AI flag; Maria confirms"), ("IMP-P5-04", "P5", "HRA never asks about caregiver", "Question added to call prep"),
  ("IMP-P5-05", "P5", "Home-health auth pending 90 h", "Hours vs clock; escalate"),
 ]
+# ---- short UI copy: one-line alert summaries, short next actions, deadlines ----
+SUMMARY = {
+ ("P1","S1"): "New heart medicine rejected at the pharmacy (needs plan approval); not filled on day 3",
+ ("P1","S3"): "Lisinopril was stopped at discharge but auto-refilled on Saturday",
+ ("P1","S2"): "Day 3 of 7: no doctor visit booked, and her husband can no longer drive",
+ ("P2","S4"): "Metformin 21 days late while A1c rose from 8.1% to 9.4%",
+ ("P2","S3"): "Pharmacy and doctor list different metformin doses",
+ ("P3","S5"): "Home number dead 4 times; a new mobile appeared in pharmacy records",
+ ("P3","S6"): "3 ER visits for asthma in 66 days; no daily inhaler since June",
+ ("P4","S7"): "Discharged to a shelter; follow-up not booked; housing screen 9 months old",
+ ("P5","S8"): "Daughter wrote she “can't keep up” in two notes",
+ ("P5","S3"): "ER says apixaban 5 mg; pharmacy and doctor say 2.5 mg",
+ ("P5","S2"): "Home-nurse approval pending 90 h; follow-up due by Saturday",
+ ("P5","S4"): "Refill looks 30 days late, but a 90-day mail-order box arrives tomorrow",
+}
+SHORT = {"P1": ("Call now · fix meds", "Visit by Fri 13"), "P4": ("Text first · book Tue visit", "Visit by Wed 11"), "P5": ("Call Linda after 7 pm", "Visit by Sat 14"),
+         "P3": ("Confirm ID · call new mobile", "Auto-closes Tue"), "P2": ("Call 12:30 · in Spanish", ""), "S7": ("Confirm Tue visit", ""), "S9": ("Confirm ride for 17 Nov", ""),
+         "S6": ("Routine check-in", ""), "S8": ("No action today", ""), "S10": ("Routine check-in", "")}
+for p in P:
+    p["nbaShort"], p["due"] = SHORT[p["id"]]
+    for sg in p.get("signals", []) + p.get("suppressed", []):
+        sg["summary"] = SUMMARY[(p["id"], sg["code"])]
+        sg["rule"] = sg.get("rule", "")
 out = dict(anchor=ANCHOR, caseManager="Maria R., RN, CCM", activeCases=48, patients=P,
            flaws=[dict(id=a, patient=b, flaw=c_, handled=d) for a, b, c_, d in FLAWS],
            feeds=[["ADT", "8 Nov 00:05", "minutes"], ["RX", "7 Nov 10:02", "daily"], ["HIE", "8 Nov 07:40", "hours–days"], ["LAB", "7 Nov", "days"],
