@@ -5,7 +5,7 @@ const S = {
   order: [], filter: 'all', legacy: false, log: [],
   sig: {}, open: {}, acts: {}, idMatch: {}, utr: {}, conf: {},
   ai: {}, tx: {}, qn: {}, chk: {}, rev: {}, edit: {}, signed: {}, start: {},
-  tasks: [], tour: -1, menu: false, health: null, extra: {}, skip: {}, conn: {}, att: {}, dial: {}, dead: {}, idv: {}, interp: {}, upd: {}, langSet: {},
+  tasks: [], tour: -1, menu: false, health: null, extra: {}, skip: {}, conn: {}, att: {}, dial: {}, dead: {}, idv: {}, interp: {}, upd: {}, langSet: {}, myRules: [],
 };
 const RULE = { S1: 'New discharge medicine not picked up', S2: 'Follow-up visit or approval at risk', S3: 'Medicine lists disagree', S4: 'Refills lapsing while risk rises',
   S5: 'A better phone number exists', S6: 'ER used instead of a doctor', S7: 'Social need blocking care', S8: 'Carer under strain' };
@@ -15,7 +15,7 @@ const SRCL = { ADT: 'Hospital admit / discharge alert', RX: 'Pharmacy claims', H
   CLM: 'Medical claims', CON: 'Contact & call log', CASE: 'Case notes', DIR: 'Provider directory (verified)', SDOH: 'Social-needs survey', BH: 'Behavioral health (consent-gated)',
   RISK: 'Risk & quality engine', ELIG: 'Enrolment', CBO: 'Community partner' };
 const $ = (s, r = document) => r.querySelector(s);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const esc = v => String(v ?? '').replace(/[\u2013\u2014]/g, '-').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ico = (n, c = '') => `<svg class="i ${c}"><use href="#i-${n}"/></svg>`;
 const P = id => S.data.patients.find(p => p.id === id);
 const first = p => p.name.split(' ')[0];
@@ -25,8 +25,8 @@ const RP = { ADT: 'Hospital', RX: 'Pharmacy', HIE: 'Dr notes', LAB: 'Lab', UM: '
 const rec = (id, pid, icon) => `<button class="rec ${icon ? 'ic' : ''}" data-act="rec" data-rec="${esc(id)}" data-pid="${pid}" title="Open the source record">${icon ? ico('file') : esc(RP[String(id).split('-')[0]] || 'Source')}<span class="rid">${esc(id)}</span></button>`;
 const tierOf = s => s >= 7 ? ['Urgent', 'urg'] : s >= 3 ? ['Today', 'tod'] : s >= 2 ? ['This week', 'wk'] : ['Routine', 'rt'];
 const tier = p => { const [l, c] = tierOf(p.score); return `<button class="tier ${c}" data-act="score" data-id="${p.id}" title="Tap for the maths">${l}<b>${p.score.toFixed(1)}</b></button>`; };
-const TIERS = `<div class="tiers"><span class="tier urg">Urgent<b>7+</b></span><span class="tier tod">Today<b>3–7</b></span><span class="tier wk">This week<b>2–3</b></span><span class="tier rt">Routine<b>&lt;2</b></span></div>`;
-const SCOREX = `<p style="margin:0 0 6px"><b>Priority = how serious × how soon × chance of reaching them today</b></p><p class="dim" style="margin:0;font-size:12px">How serious 1–5 · How soon 1–3 (a deadline within 3 days = 3) · Reach 0.5–1 (never 0, so hard-to-reach members stay on the list). Dorothy: 5 × 3 × 0.8 = 12.0.</p>${TIERS}`;
+const TIERS = `<div class="tiers"><span class="tier urg">Urgent<b>7+</b></span><span class="tier tod">Today<b>3-7</b></span><span class="tier wk">This week<b>2-3</b></span><span class="tier rt">Routine<b>&lt;2</b></span></div>`;
+const SCOREX = `<p style="margin:0 0 6px"><b>Priority = how serious × how soon × chance of reaching them today</b></p><p class="dim" style="margin:0;font-size:12px">How serious 1-5 · How soon 1-3 (a deadline within 3 days = 3) · Reach 0.5-1 (never 0, so hard-to-reach members stay on the list). Dorothy: 5 × 3 × 0.8 = 12.0.</p>${TIERS}`;
 const when = bt => /\d|morning|afternoon|midday|evening|lunch|after/i.test(bt) ? bt : 'later';
 const OUT = { na: 'No answer', vm: 'Left voicemail', wrong: 'Wrong number' };
 const OWNERS = ['Maria', 'Pharmacist', 'Social worker', 'Community health worker', "Doctor's office", 'BH counsellor'];
@@ -34,6 +34,31 @@ const DOB = { P1: '14 Mar 1948', P2: '2 Jun 1965', P3: '21 Jan 1992', P4: '9 Sep
 const langName = p => p.languageFlag ? 'Spanish' : p.language;
 const needsInterp = p => p.languageFlag || !['English', 'Other'].includes(p.language);
 const interpBtn = (p, dark) => S.interp[p.id] ? `<span class="chip t">${ico('check')}${esc(langName(p))} interpreter on the line</span>` : `<button class="btn ${dark ? 'lg esc' : 'sm'}" data-act="interp">${ico('user')}Add ${esc(langName(p))} interpreter</button>`;
+const hay = p => [p.why.join(' '), p.nba, p.scenario || '', ...p.signals.map(x => x.summary), ...p.timeline.map(x => x.text), ...p.meds.map(m => m.status + ' ' + m.pharmacy)].join(' ');
+const TRIG = {
+  er: ['Went to the ER (emergency room)', p => /\bER\b|emergency|\bED\b/i.test(hay(p))],
+  refill: ['A medicine was not picked up or a refill is late', p => /refill|not picked up|no fill|not filled|lapsing|late/i.test(hay(p))],
+  dis: ['Was discharged from hospital recently', p => /discharg/i.test(hay(p))],
+  lang: ['Prefers a language other than English', p => needsInterp(p)],
+  reach: ['Is hard to reach by phone', p => p.reach <= 0.65],
+  carer: ['A caregiver sounds under strain', p => /carer|caregiver|strain|overwhelm/i.test(hay(p))],
+  due: ['Has a deadline this week', p => !!p.due],
+};
+const DOS = { flag: 'Flag them on my Today list', task: 'Flag them and add a task for me', up: 'Flag them and move them up one place' };
+const myHits = p => S.myRules.filter(r => !r.off && (r.scope === 'all' || p.score >= 3) && TRIG[r.trig][1](p));
+const ruleChip = p => { const h = myHits(p); return h.length ? `<span class="chip my" title="${esc(h.map(r => TRIG[r.trig][0]).join(' · '))}">${ico('spark')}My rule</span>` : ''; };
+function ruleModal() {
+  modal(`<div class="mh"><h2>Add my own rule</h2><p>Runs on your caseload every morning. The clinical lead sees it too, so a good rule can be shared with the team.</p></div>
+    <div class="mb"><div class="uf rb"><label class="w">When a member…<select id="r-trig">${Object.entries(TRIG).map(([k, [l]]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select></label>
+      <label>Look at<select id="r-scope"><option value="all">All my members</option><option value="today">Only members I call today</option></select></label>
+      <label>Then<select id="r-do">${Object.entries(DOS).map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('')}</select></label>
+      <label class="w">Why (optional)<input id="r-why" placeholder="e.g. Spanish speakers need an interpreter booked a day ahead" autocomplete="off"></label></div>
+    <div id="r-prev" class="rprev"></div></div>
+    <div class="mf"><button class="btn" data-act="mclose">Cancel</button><button class="btn teal" data-act="rulesave">${ico('check')}Save rule</button></div>`);
+  const prev = () => { const t = $('#r-trig').value, sc = $('#r-scope').value; const n = S.data.patients.filter(p => (sc === 'all' || p.score >= 3) && TRIG[t][1](p));
+    $('#r-prev').innerHTML = `${ico('search')}<span>Would flag <b>${n.length}</b> member${n.length === 1 ? '' : 's'} right now${n.length ? ': ' + n.map(p => esc(first(p))).join(', ') : ''}</span>`; };
+  ['#r-trig', '#r-scope'].forEach(id => $(id).addEventListener('change', prev)); prev();
+}
 const LANGS = ['English', 'Spanish', 'Vietnamese', 'Polish', 'Arabic', 'Other'];
 function curC(p) { const cs = [...p.contacts].sort((a, b) => a.rank - b.rank), best = cs.find(c => !/Disconnected|Locked/.test(c.status)) || cs[0]; const num = S.dial[p.id] || best.number; return cs.find(x => x.number === num) || best; }
 const CAREPLAN = {
@@ -108,10 +133,10 @@ function today() {
     return sep + `<tr class="row ${rank === 1 && !S.legacy ? 'first' : ''} ${routine ? 'routine' : ''}" id="q-${id}" data-act="open" data-id="${id}">
       <td style="width:44px"><span class="rank">${S.legacy ? i + 1 : rank}</span></td>
       <td class="who"><b>${esc(p.name)}</b><span>${p.age} · ${esc(p.plan.replace('Medicare Advantage', 'Medicare Adv.').replace(' managed care', ''))}</span></td>
-      <td>${S.legacy ? '<span class="dim">—</span>' : tier(p)}</td>
-      <td class="c-why">${S.legacy ? '' : `<div class="why">${p.why.slice(0, 2).map((w, k) => `<span class="chip ${k === 0 && p.hero ? 'o' : ''}">${esc(w)}</span>`).join('')}</div>`}</td>
-      <td class="c-al">${p.signals.length && !S.legacy ? `<span class="alerts-n">${ico('alert')}${p.signals.length}</span>` : '<span class="dim">—</span>'}</td>
-      <td class="c-nba">${S.legacy ? '<span class="dim">—</span>' : esc(p.nbaShort)}</td>
+      <td>${S.legacy ? '<span class="dim">-</span>' : tier(p)}</td>
+      <td class="c-why">${S.legacy ? '' : `<div class="why">${ruleChip(p)}${p.why.slice(0, 2).map((w, k) => `<span class="chip ${k === 0 && p.hero ? 'o' : ''}">${esc(w)}</span>`).join('')}</div>`}</td>
+      <td class="c-al">${p.signals.length && !S.legacy ? `<span class="alerts-n">${ico('alert')}${p.signals.length}</span>` : '<span class="dim">-</span>'}</td>
+      <td class="c-nba">${S.legacy ? '<span class="dim">-</span>' : esc(p.nbaShort)}</td>
       <td class="c-due">${p.due && !S.legacy ? `<span class="chip o">${ico('clock')}${esc(p.due)}</span>` : ''}</td>
       <td class="c-go" style="text-align:right;white-space:nowrap">${S.legacy ? '' : `<button class="mv" data-act="move" data-id="${id}" data-dir="-1" title="Move up">▲</button> <button class="mv" data-act="move" data-id="${id}" data-dir="1" title="Move down">▼</button>`}</td>
     </tr>`;
@@ -121,9 +146,9 @@ function today() {
   return `<div class="pagehead"><div><h1>Good morning, Maria</h1><div class="sub">5 members to call today · 48 active cases</div></div>
       <div class="r"><button class="heldlink" id="heldbtn" data-act="held">${ico('eyeoff')}${nHeld} alert held back</button></div></div>
     <div class="kpis">${kp('phone', 'o', 5, 'to call today', 'filter', 'call')}${kp('clock', 'o', nDue, 'deadlines this week', 'filter', 'due')}${kp('alert', '', nAlerts, 'new alerts', 'filter', 'call')}${kp('shield', 't', nHeld, 'false alarm held back', 'held')}</div>
-    ${S.legacy ? `<div class="ban g" style="margin-bottom:12px">${ico('list')}<div class="tx"><b>Today's typical worklist:</b> A–Z, no ranking, no reasons. Dorothy is #3 and Marcus #9.</div><button class="btn sm" data-act="legacy">Back to ranked</button></div>` : ''}
+    ${S.legacy ? `<div class="ban g" style="margin-bottom:12px">${ico('list')}<div class="tx"><b>Today's typical worklist:</b> A-Z, no ranking, no reasons. Dorothy is #3 and Marcus #9.</div><button class="btn sm" data-act="legacy">Back to ranked</button></div>` : ''}
     <div class="card"><div class="hd"><div class="filters">${fb('all', 'All', 10)}${fb('call', 'Call today', 5)}${fb('due', 'Deadline this week', nDue)}${fb('reach', 'Hard to reach', nReach)}</div>
-      <span class="r dim" style="font-size:12px">${S.legacy ? 'A–Z' : 'Sorted by priority'}</span></div>
+      <span class="r dim" style="font-size:12px">${S.legacy ? 'A-Z' : 'Sorted by priority'}</span>${S.legacy ? '' : `<button class="btn sm" id="addrule" data-act="rulenew">${ico('spark')}My rules${S.myRules.length ? `<em class="cnt">${S.myRules.length}</em>` : ''}</button>`}</div>
       <div style="overflow-x:auto"><table class="q"><thead><tr><th>#</th><th>Member</th><th>Priority <button class="qh" data-act="scorehelp" title="How priority works">?</button></th><th class="c-why">Why now</th><th class="c-al">Alerts</th><th class="c-nba">Suggested next step</th><th class="c-due">Deadline</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 /* ------------------------------------------------------------------ MEMBER */
@@ -141,6 +166,7 @@ function banners(p) {
   if (p.utr) b.push(`<div class="ban ${S.utr[p.id] ? 't' : 'o'}">${ico('clock')}<div class="tx"><b>${S.utr[p.id] ? 'Auto-close paused' : 'Case auto-closes as “unreachable” on Tue'}</b> ${rec(p.utr.rec, p.id, 1)} ${flaw('IMP-P3-05')}</div>${S.utr[p.id] ? '' : `<button class="btn sm teal" data-act="utr">Pause</button>`}</div>`);
   if (p.fuh) { const d = ['4', '5', '6', '7', '8', '9', '10', '11'];
     b.push(`<div class="ban o" id="ban-fuh">${ico('clock')}<div class="tx"><b>7-day follow-up closes Wed 11 Nov</b> <span class="dim">· open video slot Tue 15:00</span> ${flaw('IMP-P4-04')}</div><div class="days">${d.map((x, i) => `<span class="${i < 5 ? 'p' : i === 5 ? 'n' : i === 7 ? 'e' : ''}">${x}</span>`).join('')}</div></div>`); }
+  const mh = myHits(p); if (mh.length) b.push(`<div class="ban my">${ico('spark')}<div class="tx"><b>Your rule:</b> ${esc(TRIG[mh[0].trig][0].replace(/^\w/, c => c.toLowerCase()))}${mh[0].why ? ` <span class="dim">· ${esc(mh[0].why)}</span>` : ''}</div></div>`);
   if (p.consentGate) b.push(`<div class="locked" id="ban-lock">${ico('lock')}<div><b>1 record locked</b> <span class="dim">· substance-use program; needs Marcus's consent</span> ${flaw('IMP-P4-03')}</div></div>`);
   return b.length ? `<div class="banners">${b.join('')}</div>` : '';
 }
@@ -377,11 +403,16 @@ function insights() {
   const H = heroes(), rules = Object.keys(RULE);
   const row = c => { const fired = H.filter(p => p.signals.some(s => s.code === c)), held = H.filter(p => p.suppressed.some(s => s.code === c)).length;
     const ok = fired.filter(p => S.sig[`${p.id}:${c}`]?.state === 'ok').length, no = fired.filter(p => S.sig[`${p.id}:${c}`]?.state === 'no').length, rv = ok + no;
-    return `<tr><td><span class="chip n">Rule ${c.slice(1)}</span></td><td>${esc(RULE[c])}</td><td><b>${fired.length}</b></td><td>${held || '—'}</td><td>${ok}</td><td>${no}</td>
+    return `<tr><td><span class="chip n">Rule ${c.slice(1)}</span></td><td>${esc(RULE[c])}</td><td><b>${fired.length}</b></td><td>${held || '-'}</td><td>${ok}</td><td>${no}</td>
       <td style="width:120px">${rv ? `<div class="bar2"><i style="width:${ok / rv * 100}%"></i></div>` : '<span class="dim" style="font-size:12px">no reviews yet</span>'}</td></tr>`; };
   const feeds = S.data.feeds.map(([s, d, lag]) => `<tr><td>${src(s)}</td><td>${esc(d)}</td><td class="dim">${esc(lag)}</td></tr>`).join('');
   return `<div class="pagehead"><div><h1>Insights</h1><div class="sub">For the clinical lead · how the rules and the data are doing today</div></div></div>
     <div class="card" id="rulecard"><div class="hd"><h3>Alert rules</h3><span class="r dim" style="font-size:12px">Confirm and dismiss clicks feed this table live</span></div><div style="overflow-x:auto"><table class="t"><thead><tr><th>Rule</th><th>Checks for</th><th>Fired</th><th>Held back</th><th>Confirmed</th><th>Dismissed</th><th>Agree rate</th></tr></thead><tbody>${rules.map(row).join('')}</tbody></table></div></div>
+    <div class="card" id="myrules" style="margin-top:16px"><div class="hd"><h3>Maria's own rules</h3><span class="chip">${S.myRules.length}</span><span class="r"><button class="btn sm teal" data-act="rulenew">${ico('spark')}Add a rule</button></span></div>
+      ${S.myRules.length ? `<table class="t"><thead><tr><th>When a member…</th><th>Then</th><th>Flags now</th><th>Status</th><th></th></tr></thead><tbody>${S.myRules.map((r, i) => { const n = S.data.patients.filter(p => myHits(p).includes(r)).length;
+        return `<tr class="${r.off ? 'dim' : ''}"><td><b>${esc(TRIG[r.trig][0])}</b>${r.why ? `<div class="dim" style="font-size:12px">${esc(r.why)}</div>` : ''}</td><td>${esc(DOS[r.do])}</td><td><b>${n}</b></td><td><span class="chip ${r.off ? 'g' : 't'}">${r.off ? 'Paused' : 'On · lead can review'}</span></td>
+          <td style="text-align:right;white-space:nowrap"><button class="btn sm ghost" data-act="ruleoff" data-i="${i}">${r.off ? 'Turn on' : 'Pause'}</button><button class="btn sm ghost" data-act="ruledel" data-i="${i}">${ico('x')}</button></td></tr>`; }).join('')}</tbody></table>`
+        : `<div class="bd dim" style="font-size:13px">No personal rules yet. Spot a pattern the 8 rules miss? Add it in plain words, for example “prefers a language other than English → add a task for me”.</div>`}</div>
     <div class="grid2" style="margin-top:16px"><div class="card"><div class="hd"><h3>Data feeds</h3></div><table class="t"><thead><tr><th>Source</th><th>Last received</th><th>Usual delay</th></tr></thead><tbody>${feeds}</tbody></table></div>
       <div class="card"><div class="hd"><h3>Queue overrides</h3><span class="chip">${S.log.length}</span></div><div class="bd">${S.log.length ? `<ul class="mini">${S.log.map(l => `<li><b>${l.at}</b><span>${esc(l.text)}</span><span class="dim" style="margin-left:auto">${esc(l.reason)}</span></li>`).join('')}</ul>` : '<span class="dim" style="font-size:12.5px">No overrides yet. Use ▲▼ on the Today list.</span>'}</div></div></div>`;
 }
@@ -471,6 +502,7 @@ const TOUR = [
   { h: 'm/P1/plan', el: '#careplan', t: 'It lands on the care plan', x: 'Signing updates each problem, goal and step, creates tasks, and sends evidence to the quality team for review.' },
   { h: 'm/P3/alerts', el: '#ban-id', t: 'Same person?', x: "Keisha's ER visit was filed as “KEYSHA” with a new hospital ID. Records never merge by themselves: Maria confirms." },
   { h: 'm/P4/alerts', el: '#ban-fuh', t: 'Deadlines and consent', x: "Marcus's 7-day follow-up closes Wednesday. His substance-use record stays locked without his consent." },
+  { h: 'insights', el: '#myrules', t: 'Maria can add her own rules', x: 'Spot a pattern the 8 rules miss? She writes it in plain words (when a member… then…), sees who it would flag right now, and saves it. It runs on her list every morning; the clinical lead can review it and share it with the team.' },
   { h: 'insights', el: '#rulecard', t: 'For the clinical lead', x: "Every confirm, dismiss and re-order lands here, so the rules improve each week. That's the tour. Explore any member!" },
 ];
 const EXPLAIN = {
@@ -478,7 +510,7 @@ const EXPLAIN = {
   m: ['Member view', 'One member on one screen: alerts with their proof, the care plan, medicines, timeline and contacts. The suggested next step and Start call sit on the right.'],
   call: ['Call', 'Prepare, call, wrap up. Maria logs the outcome of every dial. On a connected call she verifies identity first; the checklist is only a suggestion. If she learns something new (language, best time, a new number) she updates it once and it shows everywhere. AI drafts the note; nothing is saved until she signs.'],
   tasks: ['Tasks', 'Deadlines this week plus every task created when Maria signs a call note.'],
-  insights: ['Insights', 'For the clinical lead: how each alert rule performs and how fresh each data feed is.'],
+  insights: ['Insights', 'For the clinical lead: how each alert rule performs and how fresh each data feed is. Maria\'s own rules sit here too; add one with “Add a rule”.'],
 };
 function welcome() {
   modal(`<div class="wel"><div class="wbot">${$('#bot .botsvg').outerHTML}</div><h2>Hi! I'm your demo guide.</h2>
@@ -589,6 +621,15 @@ function onClick(e) {
     idv: () => { (S.idv[p.id] ||= {})[d.k] = t.checked; render(true); },
     with: () => { (S.idv[p.id] ||= {}).with = d.v; render(true); },
     interp: () => { S.interp[p.id] = true; render(true); toast(langName(p) + ' interpreter added to the call'); },
+    rulenew: () => ruleModal(),
+    rulesave: () => { const r = { trig: $('#r-trig').value, scope: $('#r-scope').value, do: $('#r-do').value, why: $('#r-why').value.trim(), at: clock() };
+      S.myRules.push(r); $('#modal').hidden = true;
+      const hits = S.data.patients.filter(p => myHits(p).includes(r));
+      if (r.do === 'task') hits.forEach(p => S.tasks.push({ task: `My rule: ${TRIG[r.trig][0].replace(/^\w/, c => c.toLowerCase())}${r.why ? ' · ' + r.why : ''}`, owner: 'Maria', due: 'Today', pid: p.id, done: false, from: 'My rule' }));
+      if (r.do === 'up') hits.forEach(p => { const i = S.order.indexOf(p.id); if (i > 0) { [S.order[i - 1], S.order[i]] = [S.order[i], S.order[i - 1]]; S.log.unshift({ at: clock(), text: `${p.name} moved up by my rule`, reason: TRIG[r.trig][0] }); } });
+      render(true); toast(`Rule saved · flags ${hits.length} member${hits.length === 1 ? '' : 's'} now`); },
+    ruleoff: () => { const r = S.myRules[+d.i]; r.off = !r.off; render(true); },
+    ruledel: () => { S.myRules.splice(+d.i, 1); render(true); toast('Rule removed'); },
     upd: () => { const c = curC(p), at = clock(), ch = [], places = new Set(), v = id => ($(id)?.value || '').trim();
       if (!S.dial[p.id]) S.dial[p.id] = c.number;
       const L = v('#u-lang'), curL = p.languageFlag ? 'English' : p.language;

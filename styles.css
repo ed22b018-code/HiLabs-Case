@@ -424,3 +424,10 @@ select.own{border:1px solid var(--line2);border-radius:7px;padding:4px 6px;font:
 .ulog s{color:var(--dim)}.ulog small{display:block;color:var(--dim);font-size:11.5px}
 .fan small{display:block;font-size:10.5px;color:var(--dim);font-weight:500}
 @media (max-width:700px){.uf{grid-template-columns:1fr}}
+.chip.my{background:#FFF4E6;color:var(--odark);border:1px solid #F6CF9C}
+.ban.my{background:#FFF4E6;border-color:#F6CF9C}.ban.my .i{color:var(--orange)}
+#addrule{margin-left:10px}#addrule em.cnt{font-style:normal;background:var(--orange);color:#fff;border-radius:9px;padding:0 6px;margin-left:5px;font-size:11px}
+.rb{margin-top:4px}
+.rprev{margin-top:12px;padding:9px 11px;border-radius:9px;background:var(--bsoft2);font-size:12.5px;color:var(--ink);display:flex;gap:6px;align-items:center}
+.rprev .i{color:var(--blue2);flex:none}
+.uf input,.uf select{width:100%;box-sizing:border-box}
