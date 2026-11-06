@@ -6,7 +6,7 @@
 const DATA = require('../data.json');
 
 const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [])
-  .concat(['gemini-flash-lite-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-flash-latest']);
+  .concat(['gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-flash-latest']);
 let WORKING = null; // {endpoint, model} cached across warm invocations
 
 const HITS = new Map(); // naive per-IP rate limit (per warm instance)
@@ -85,12 +85,13 @@ async function callGemini(mode, p, transcript, key) {
   });
   const tries = [];
   const order = WORKING ? [WORKING] : [];
-  for (const i of [0, 1]) for (const m of MODELS) { const e = endpoints(m, key)[i]; order.push({ endpoint: e.name, model: m, url: e.url }); }
-  const errors = [];
+  for (const i of [0]) for (const m of MODELS) { const e = endpoints(m, key)[i]; order.push({ endpoint: e.name, model: m, url: e.url }); }
+  const errors = [], start = Date.now();
   for (const t of order) {
+    if (Date.now() - start > 21000) { errors.push('time budget spent'); break; }
     const url = t.url || endpoints(t.model, key).find(e => e.name === t.endpoint).url;
     try {
-      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 12000);
+      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), Math.max(3000, Math.min(11000, 24000 - (Date.now() - start))));
       const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bodyFor(t.model), signal: ctl.signal });
       clearTimeout(timer);
       const j = await r.json().catch(() => ({}));
