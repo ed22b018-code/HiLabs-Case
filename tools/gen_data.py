@@ -37,7 +37,7 @@ P.append(dict(
          evidence=[ev("HIE-1001", "HIE", "Discharge summary: STOP lisinopril 10 mg (replaced by sacubitril/valsartan)"),
                    ev("RX-1003", "RX", "Lisinopril 10 mg AUTO-REFILLED Sat 7 Nov 09:15")],
          guards=["Both records belong to the same member and pharmacy"],
-         actions=["Tell Dorothy not to take lisinopril with the new heart medicine (36-hour washout required)",
+         actions=["Reinforce the discharge instruction to stop lisinopril; her doctor confirms when the new heart medicine starts (36-hour gap)",
                   "Ask the pharmacy to cancel the lisinopril auto-refill", "Prescriber confirms the switch-over plan"]),
     dict(code="S2", title="7-day visit at risk", confidence="High", measure="TRC · patient engagement",
          mode="Auto-detected · Maria books", rule="Day ≥3 after discharge and no PCP visit booked or billed",

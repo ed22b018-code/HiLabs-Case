@@ -5,7 +5,7 @@ const S = {
   order: [], filter: 'all', legacy: false, log: [],
   sig: {}, open: {}, acts: {}, idMatch: {}, utr: {}, conf: {},
   ai: {}, tx: {}, qn: {}, chk: {}, rev: {}, edit: {}, signed: {}, start: {},
-  tasks: [], tour: -1, menu: false, health: null,
+  tasks: [], tour: -1, menu: false, health: null, extra: {}, skip: {},
 };
 const RULE = { S1: 'New discharge medicine not picked up', S2: 'Follow-up visit or approval at risk', S3: 'Medicine lists disagree', S4: 'Refills lapsing while risk rises',
   S5: 'A better phone number exists', S6: 'ER used instead of a doctor', S7: 'Social need blocking care', S8: 'Carer under strain' };
@@ -36,7 +36,7 @@ async function init() {
   window.addEventListener('hashchange', route);
   document.addEventListener('click', onClick);
   document.addEventListener('input', onInput);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAll(); } if (S.tour >= 0 && e.key === 'ArrowRight') tourGo(S.tour + 1); if (S.tour > 0 && e.key === 'ArrowLeft') tourGo(S.tour - 1); });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'addi') { e.preventDefault(); $('[data-act=add]').click(); return; } if (e.key === 'Escape') { closeAll(); } if (S.tour >= 0 && e.key === 'ArrowRight') tourGo(S.tour + 1); if (S.tour > 0 && e.key === 'ArrowLeft') tourGo(S.tour - 1); });
   window.addEventListener('resize', placeSpot); window.addEventListener('scroll', placeSpot, { passive: true });
   route();
   fetch('/api/ai').then(r => r.json()).then(j => S.health = j).catch(() => S.health = { ok: false });
@@ -126,7 +126,7 @@ function alertCard(p, s, i) {
     <div class="meta">${srcs.map(src).join('')}<span style="flex:1"></span>${ai ? `<span class="ai">${ico('spark')}AI flag</span>` : ''}<span class="chip ${s.confidence.startsWith('High') ? 't' : ''}">${esc(s.confidence.split('·')[0].trim())} confidence</span></div>
     ${open ? `<div class="body"><ul class="ev">${s.evidence.map(e => `<li>${src(e.src)}${rec(e.rec, p.id)}<span>${esc(e.text)}</span></li>`).join('')}</ul>
       ${s.guards.length ? `<div class="checks">${s.guards.map(g => `<span class="chip t">${ico('check')}${esc(g)}</span>`).join('')}</div>` : ''}
-      <div class="todo">${s.actions.map((a, j) => `<label><input type="checkbox" data-act="act" data-k="${k}:${j}" ${S.acts[`${k}:${j}`] ? 'checked' : ''}>${esc(a)}</label>`).join('')}</div></div>` : ''}
+      <div class="gh" style="margin-top:4px">Suggested steps</div><div class="todo">${s.actions.map((a, j) => `<label><input type="checkbox" data-act="act" data-k="${k}:${j}" ${S.acts[`${k}:${j}`] ? 'checked' : ''}>${esc(a)}</label>`).join('')}</div></div>` : ''}
     <div class="foot">${st ? `<span class="${st.state === 'ok' ? 'ok' : 'chip g'}">${st.state === 'ok' ? ico('check') + 'Confirmed' : 'Dismissed'} · ${st.at}</span><button class="btn sm ghost" data-act="undo" data-k="${k}">Undo</button>`
       : `<button class="btn sm teal" data-act="ok" data-k="${k}">${ico('check')}Confirm</button><button class="btn sm" data-act="no" data-k="${k}">Dismiss</button>`}
       <span class="r">${esc(s.measure.split('(')[0])}</span></div></div>`;
@@ -168,8 +168,8 @@ function tabNotes(p) {
 function sideRail(p) {
   const plan = p.signals.flatMap(s => s.actions.slice(0, 1)).slice(0, 4);
   const fresh = p.sources.map(([sname, d]) => { const stale = /days\)|not|expected|consent|missing|\(stay/.test(d); return `<li><span class="fd ${stale ? 's' : ''}"></span><b style="width:74px;flex:none">${esc(SRCN[sname] || sname)}</b><span class="dim">${esc(d)}</span></li>`; }).join('');
-  return `<div class="nbacard"><div class="lbl">Next best action</div><p>${esc(p.nba)}</p><button class="btn orange" data-act="call" data-id="${p.id}">${ico('phone')}Start call</button></div>
-    ${plan.length ? `<div class="card side-card"><div class="hd"><h3>Call plan</h3></div><div class="bd todo">${plan.map((a, j) => `<label><input type="checkbox">${esc(a)}</label>`).join('')}</div></div>` : ''}
+  return `<div class="nbacard"><div class="lbl">Suggested next step</div><p>${esc(p.nba)}</p><button class="btn orange" data-act="call" data-id="${p.id}">${ico('phone')}Start call</button></div>
+    ${plan.length ? `<div class="card side-card"><div class="hd"><h3>Suggested call plan</h3><span class="r chip g">Editable</span></div><div class="bd todo">${plan.map((a, j) => `<label><input type="checkbox">${esc(a)}</label>`).join('')}</div></div>` : ''}
     ${p.gaps.length ? `<div class="card side-card"><div class="hd"><h3>Open quality gaps</h3></div><div class="bd" style="display:flex;flex-wrap:wrap;gap:5px">${p.gaps.map(g => `<span class="chip o">${esc(g.split(':')[0])}</span>`).join('')}</div></div>` : ''}
     <div class="card side-card"><div class="hd"><h3>Data freshness</h3></div><div class="bd" style="padding-top:2px;padding-bottom:2px"><ul class="mini">${fresh}</ul></div></div>`;
 }
@@ -223,13 +223,20 @@ function prep(p) {
 function live(p) {
   const cs = [...p.contacts].sort((a, b) => a.rank - b.rank), best = cs.find(c => !/Disconnected|Locked/.test(c.status)) || cs[0];
   const qs = (S.ai['brief:' + p.id]?.result?.questions) || p.cachedBrief?.questions || ['How are you feeling today?', 'Any changes since we last spoke?'];
-  const plan = p.signals.flatMap(s => s.actions.slice(0, 1)).slice(0, 4);
-  const items = [...qs.map(q => ['Ask', q]), ...plan.map(a => ['Do', a])];
+  const aiQs = !!S.ai['brief:' + p.id]?.result;
+  const clean = a => a.replace(/^Call( now)?[:,]?\s*/i, '').replace(/^\w/, c => c.toUpperCase());
+  const plan = p.signals.flatMap(s => s.actions.slice(0, 2)).filter(a => !/^Call (\(|at |now$)/i.test(a) && !/^Call now: confirm/i.test(a)).map(clean).slice(0, 4);
+  const extra = S.extra[p.id] || [], skip = S.skip[p.id] || {};
+  const items = [...qs.map(q => ['q', q]), ...plan.map(a => ['a', a]), ...extra.map(x => ['m', x])].map((it, i) => [...it, i]).filter(it => !skip[it[2]]);
   const chk = S.chk[p.id] || {};
+  const row = ([k, t, i]) => `<label><input type="checkbox" data-act="chk" data-i="${i}" ${chk[i] ? 'checked' : ''}><span style="flex:1">${esc(t)}</span><button class="btn sm ghost" data-act="skip" data-i="${i}" title="Not needed">${ico('x')}</button></label>`;
+  const grp = (k, title, tag) => { const g = items.filter(x => x[0] === k); return g.length ? `<div class="grp"><div class="gh">${title}${tag}</div>${g.map(row).join('')}</div>` : ''; };
   return `<div class="live"><div class="av">${ini(p)}</div><div class="who"><b>${esc(p.name)}</b><span>${esc(best.number)} · ${esc(best.owner.split(',')[0])}</span></div>
       <div class="tm" id="timer">00:00</div><button class="btn red lg" data-act="nav" data-h="call/${p.id}/wrap">${ico('endcall')}End call</button></div>
-    <div class="cgrid"><div class="card" id="checklist"><div class="hd"><h3>Checklist</h3><span class="r dim" style="font-size:12px">${Object.values(chk).filter(Boolean).length}/${items.length}</span></div><div class="bd checklist">
-      ${items.map(([k, t], i) => `<label><input type="checkbox" data-act="chk" data-i="${i}" ${chk[i] ? 'checked' : ''}><span><span class="chip ${k === 'Ask' ? '' : 't'}" style="margin-right:6px">${k}</span>${esc(t)}</span></label>`).join('')}</div></div>
+    <div class="cgrid"><div class="card" id="checklist"><div class="hd"><h3>Suggested for this call</h3><span class="r dim" style="font-size:12px">${items.filter(x => chk[x[2]]).length}/${items.length} covered</span></div>
+      <div class="bd checklist">${grp('q', 'Questions to consider', aiQs ? `<span class="ai">${ico('spark')}AI</span>` : `<span class="chip g">Template</span>`)}${grp('a', 'Steps from the alerts', '<span class="chip">Rules</span>')}${grp('m', 'Added by Maria', '')}
+        <div class="addrow"><input id="addi" placeholder="Add your own item…" autocomplete="off"><button class="btn sm" data-act="add">Add</button></div>
+        <p class="hint">${ico('shield')}Suggestions only. Maria decides what to ask and do; nothing here is a clinical order.</p></div></div>
       <div class="card"><div class="hd"><h3>Quick notes</h3><span class="r chip g">${ico('file')}Transcript on</span></div><div class="bd"><textarea id="qn" data-qn="${p.id}" rows="9" placeholder="Anything worth remembering…">${esc(S.qn[p.id] || '')}</textarea></div></div></div>`;
 }
 function wrap(p) {
@@ -371,7 +378,7 @@ const TOUR = [
   { h: 'm/P1/alerts', el: '#disagree', t: 'Disagreements, side by side', x: 'Lisinopril was stopped at discharge but refilled. Both sources show with their dates; Maria decides.' },
   { h: 'm/P1/alerts', el: '#startcall', t: 'One button to act', x: 'Everything Maria needs for the call is one tap away.' },
   { h: 'call/P1/prep', el: '#briefcard', t: 'A 30-second brief', x: "AI read only Dorothy's records. Every line cites a record, or the server deletes it." },
-  { h: 'call/P1/live', el: '#checklist', t: 'On the call', x: 'A timer, a checklist and quick notes. Nothing else to read.' },
+  { h: 'call/P1/live', el: '#checklist', t: 'Suggestions, not orders', x: 'AI suggests questions and the alerts suggest steps, each labelled. Maria ticks, skips or adds her own: she runs the call.' },
   { h: 'call/P1/wrap', el: '#notecard', t: 'Wrap up in minutes', x: 'AI drafts the note from the call. Maria checks each field and signs once: five systems update.' },
   { h: 'm/P3/alerts', el: '#ban-id', t: 'Same person?', x: "Keisha's ER visit was filed as “KEYSHA” with a new hospital ID. Records never merge by themselves: Maria confirms." },
   { h: 'm/P4/alerts', el: '#ban-fuh', t: 'Deadlines and consent', x: "Marcus's 7-day follow-up closes Wednesday. His substance-use record stays locked without his consent." },
@@ -380,7 +387,7 @@ const TOUR = [
 const EXPLAIN = {
   today: ['Today', "Who needs Maria first, and why. Score = how serious × how soon × chance of reaching them. Tap a row to open the member; ▲▼ re-orders and asks for a reason."],
   m: ['Member view', 'One member on one screen: alerts with their proof, medicines, timeline and contacts. The next best action and Start call sit on the right.'],
-  call: ['Call', 'Three steps: prepare, call, wrap up. AI drafts the brief and the note, citing records; Maria checks and signs. Nothing is saved until she signs.'],
+  call: ['Call', 'Three steps: prepare, call, wrap up. The checklist is only a suggestion: AI proposes questions, rules propose steps, Maria decides. AI drafts the note; nothing is saved until she signs.'],
   tasks: ['Tasks', 'Deadlines this week plus every task created when Maria signs a call note.'],
   insights: ['Insights', 'For the clinical lead: how each alert rule performs and how fresh each data feed is.'],
 };
@@ -462,7 +469,9 @@ function onClick(e) {
     idm: () => { S.idMatch[p.id] = d.v; render(true); toast(d.v === 'yes' ? '3 hospital records linked' : 'Kept separate'); },
     utr: () => { S.utr[p.id] = true; render(true); toast('Auto-close paused'); },
     sms: () => toast('Callback text queued for the 2-hour no-answer rule'),
-    chk: () => { (S.chk[p.id] ||= {})[d.i] = t.checked; const n = Object.values(S.chk[p.id]).filter(Boolean).length; const h = $('#checklist .hd .r'); if (h) h.textContent = h.textContent.replace(/^\d+/, n); },
+    chk: () => { (S.chk[p.id] ||= {})[d.i] = t.checked; render(true); },
+    skip: () => { e.stopPropagation(); (S.skip[p.id] ||= {})[d.i] = true; render(true); toast('Removed from this call'); },
+    add: () => { const v = $('#addi').value.trim(); if (!v) return; (S.extra[p.id] ||= []).push(v); render(true); setTimeout(() => $('#addi')?.focus(), 30); },
     redraft: () => { runAI('note', p.id); render(true); },
     rev: () => { (S.rev[p.id] ||= {})[d.i] = t.checked; render(true); },
     revall: () => { const n = S.ai['note:' + p.id].result.fields.length; S.rev[p.id] = Object.fromEntries([...Array(n).keys()].map(i => [i, true])); render(true); },

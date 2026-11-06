@@ -346,3 +346,13 @@ details.tx summary{cursor:pointer;color:var(--blue);font-weight:600;font-size:12
   .ev li{grid-template-columns:auto auto;}.ev li>span:last-child{grid-column:1/-1}
   .pagehead .r{margin-left:0;width:100%}
 }
+
+.grp{margin-bottom:6px}
+.gh{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;margin:6px 0 2px}
+.checklist label .btn{opacity:0;padding:2px 4px}
+.checklist label:hover .btn{opacity:1}
+.addrow{display:flex;gap:6px;margin-top:10px}
+.addrow input{flex:1;height:32px;border:1px dashed var(--line2);border-radius:8px;padding:0 10px;font:inherit;background:var(--bsoft2)}
+.addrow input:focus{outline:2px solid var(--blue2);border-color:transparent;background:#fff}
+.hint{display:flex;gap:6px;align-items:center;margin:10px 0 0;font-size:11.5px;color:var(--dim)}
+@media (max-width:760px){.checklist label .btn{opacity:1}}
