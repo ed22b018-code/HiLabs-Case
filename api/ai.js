@@ -6,7 +6,7 @@
 const DATA = require('../data.json');
 
 const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [])
-  .concat(['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash']);
+  .concat(['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-flash-lite-latest']);
 let WORKING = null; // {endpoint, model} cached across warm invocations
 
 const HITS = new Map(); // naive per-IP rate limit (per warm instance)
@@ -78,26 +78,26 @@ function schema(mode) {
 async function callGemini(mode, p, transcript, key) {
   const body = JSON.stringify({
     contents: [{ role: 'user', parts: [{ text: prompt(mode, p, transcript) }] }],
-    generationConfig: { temperature: 0.1, maxOutputTokens: 1400, responseMimeType: 'application/json', responseSchema: schema(mode) },
+    generationConfig: { temperature: 0.1, maxOutputTokens: 4096, responseMimeType: 'application/json', responseSchema: schema(mode) },
   });
   const tries = [];
   const order = WORKING ? [WORKING] : [];
-  for (const m of MODELS) for (const e of endpoints(m, key)) order.push({ endpoint: e.name, model: m, url: e.url });
+  for (const i of [0, 1]) for (const m of MODELS) { const e = endpoints(m, key)[i]; order.push({ endpoint: e.name, model: m, url: e.url }); }
   const errors = [];
   for (const t of order) {
     const url = t.url || endpoints(t.model, key).find(e => e.name === t.endpoint).url;
     try {
-      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 14000);
+      const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 20000);
       const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: ctl.signal });
       clearTimeout(timer);
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) { errors.push(`${t.endpoint}/${t.model}: ${r.status} ${(j.error && j.error.status) || ''}`); if (r.status === 429) break; continue; }
+      if (!r.ok) { errors.push(`${t.endpoint}/${t.model}: ${r.status} ${(j.error && (j.error.status + ' ' + String(j.error.message || '').slice(0, 120))) || ''}`); if (r.status === 429) break; continue; }
       const text = j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts.map(x => x.text || '').join('');
       if (!text) { errors.push(`${t.endpoint}/${t.model}: empty`); continue; }
       WORKING = { endpoint: t.endpoint, model: t.model };
       return { parsed: JSON.parse(text.replace(/^```json\s*|```$/g, '')), model: t.model, endpoint: t.endpoint };
     } catch (e) { errors.push(`${t.endpoint}/${t.model}: ${e.name === 'AbortError' ? 'timeout' : e.message}`); }
-    if (errors.length >= 6) break;
+    if (errors.length >= 6 || errors.some(x => x.includes('timeout'))) break;
   }
   throw new Error(errors.slice(0, 4).join(' | ') || 'no model reachable');
 }
