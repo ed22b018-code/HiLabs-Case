@@ -29,7 +29,9 @@ const first = p => p.name.split(' ')[0];
 const initials = p => p.name.split(' ').map(w => w[0]).join('').slice(0, 2);
 const now = () => { const d = new Date(); return `08:${String(3 + (S.log.length + Object.keys(S.sig).length) % 50).padStart(2, '0')}`; };
 const recChip = (id, pid) => `<button class="rec" data-act="rec" data-rec="${esc(id)}" data-pid="${pid}">${esc(id)}</button>`;
-const srcChip = s => `<span class="src" title="${esc(SRC[s] || s)}">${esc(s.length > 6 ? 'PBM' : s)}</span>`;
+const SRCS = { ADT: 'Hospital', RX: 'Pharmacy', HIE: 'Dr notes', LAB: 'Lab', UM: 'Approval', CLM: 'Claims', CON: 'Contact', CASE: 'Case note', DIR: 'Directory', SDOH: 'Social', BH: 'Mental hlth', RISK: 'Risk', ELIG: 'Enrolment', CBO: 'Community', 'PBM pharmacy profile': 'Pharmacy' };
+const srcChip = s => `<span class="src" title="${esc(SRC[s] || s)}">${esc(SRCS[s] || s)}</span>`;
+const RULE = c => /^S\d$/.test(c) ? 'Rule ' + c.slice(1) : c;
 const flaw = id => id ? `<span class="flaw" title="Deliberately planted data flaw (see How it works)">${ico('alert')}${id}</span>` : '';
 const fmtDate = s => { if (!s) return ''; const d = new Date(s.length <= 10 ? s + 'T12:00' : s); if (isNaN(d)) return s;
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + (s.length > 10 ? ' ' + s.slice(11, 16) : ''); };
@@ -87,7 +89,7 @@ function today() {
         <span class="bars"><i class="r" style="height:${p.risk / 5 * maxH}px" title="Risk"></i><i class="w" style="height:${p.window / 3 * maxH}px" title="Window"></i><i style="height:${p.reach * maxH}px" title="Reach"></i></span></div>
         <span class="formula">${p.risk} × ${p.window} × ${p.reach}</span></div>
       <div class="why">${p.why.map((w, k) => `<span class="chip ${k === 0 && !routine ? 'o' : ''}">${esc(w)}</span>`).join('')}</div>
-      <div class="sigs row" style="gap:4px">${p.signals.map(s => `<span class="sig ${s.code === 'S3' || s.code === 'S1' ? 'o' : ''}" title="${esc(s.title)}">${s.code}</span>`).join('') || '<span class="dim" style="font-size:12px">—</span>'}</div>
+      <div class="sigs">${p.signals.length ? `<span class="sig ${p.signals.some(s => s.code === 'S3' || s.code === 'S1') ? 'o' : ''}" title="${esc(p.signals.map(s => s.title).join(' · '))}">${p.signals.length}</span><span class="note"> alert${p.signals.length > 1 ? 's' : ''}</span>` : '<span class="dim" style="font-size:12px">none</span>'}</div>
       <div class="nba">${esc(p.nba)}</div>
       <div class="ops">${S.legacy ? '' : `<button class="mv" data-act="move" data-id="${id}" data-dir="-1" title="Move up (asks why)">▲</button><button class="mv" data-act="move" data-id="${id}" data-dir="1" title="Move down (asks why)">▼</button>`}
         <button class="btn sm ${routine ? '' : 'primary'}" data-act="open" data-id="${id}">Open</button></div>
@@ -97,12 +99,12 @@ function today() {
   return `
   <section class="hello" id="hello">
     <div><div class="eyebrow">Monday 9 Nov · 08:00</div><h1>Good morning, Maria.</h1>
-      <p>Over the weekend the workbench read <b>${nRec} records from 13 sources</b> for your 48 members, raised <b>${nSig} signals</b>, held back <b>${nSup} false alarm</b>, and ranked who needs you first. <b>Start with Dorothy</b>: her new heart medicine was never dispensed and a stopped one was refilled.</p>
+      <p>Over the weekend the workbench read <b>${nRec} records from 13 sources</b> for your 48 members, raised <b>${nSig + nSup} alerts</b>, held back <b>${nSup}</b> as a false alarm, and ranked who needs you first. <b>Start with Dorothy</b>: her new heart medicine was never dispensed and a stopped one was refilled.</p>
       <div class="cta"><button class="btn orange" data-act="open" data-id="P1">Open Dorothy ${ico('arrow')}</button><button class="btn" style="background:transparent;color:#fff;border-color:#ffffff40" data-act="legacy">${S.legacy ? 'Back to ranked queue' : 'Compare: today\'s worklist'}</button></div></div>
-    <div class="funnel"><div><b>${nRec}</b><span>records read</span></div><div><b>${nSig + nSup}</b><span>rules fired</span></div><div><b>${nSup}</b><span>held back (guard)</span></div><div class="hl"><b>5</b><span>members to call first</span></div></div>
+    <div class="funnel"><div><b>${nRec}</b><span>records read</span></div><div><b>${nSig + nSup}</b><span>alerts raised</span></div><div><b>${nSup}</b><span>false alarm held back</span></div><div class="hl"><b>5</b><span>members to call first</span></div></div>
   </section>
   <div class="kpis">
-    <div class="kpi"><div class="ic o">${ico('clock')}</div><div><b>3</b><span>deadlines close this week (TRC Fri, FUH Wed, FMC Sat)</span></div></div>
+    <div class="kpi"><div class="ic o">${ico('clock')}</div><div><b>3</b><span>follow-up deadlines close this week (Marcus Wed, Dorothy Fri, Margaret Sat)</span></div></div>
     <div class="kpi"><div class="ic o">${ico('alert')}</div><div><b>2</b><span>unsafe medication conflicts (Dorothy, Margaret)</span></div></div>
     <div class="kpi"><div class="ic">${ico('phone')}</div><div><b>3</b><span>better phone numbers found in other sources</span></div></div>
     <div class="kpi"><div class="ic t">${ico('shield')}</div><div><b>${nSup}</b><span>alert suppressed by a guard (no false alarm)</span></div></div>
@@ -112,7 +114,7 @@ function today() {
     <div class="card ${S.legacy ? 'legacy' : ''}" id="queue">
       <div class="hd"><span class="n">1</span><h3>Today's queue · ranked by who needs Maria first</h3><span class="sub">Score = clinical risk (1–5) × time window (1–3) × chance of reaching someone today (0.5–1)</span></div>
       <div class="legacyNote">${ico('alert')} <b>Today's worklist:</b> A–Z by last name, no reasons, no signals. Dorothy sits at #3 and Marcus at #9: his 7-day follow-up window closes Wednesday.</div>
-      <div class="qhead"><span>#</span><span>Member</span><span>Priority</span><span>Why now</span><span>Signals</span><span>Next best action</span><span></span></div>
+      <div class="qhead"><span>#</span><span>Member</span><span>Priority</span><span>Why now</span><span>Alerts</span><span>Next best action</span><span></span></div>
       ${rows}
     </div>
     <div class="stack">
@@ -170,8 +172,8 @@ function signalCard(p, s) {
   const urgent = ['S1', 'S3'].includes(s.code) && s.confidence.startsWith('High');
   const ai = s.mode.startsWith('AI');
   return `<div class="scard ${urgent ? 'urgent' : ''} ${st?.state === 'confirmed' ? 'ok' : ''} ${st?.state === 'dismissed' ? 'no' : ''}" id="sig-${s.code}">
-    <div class="top1"><span class="sig ${urgent ? 'o' : ''}">${s.code}</span><h4>${esc(s.title)}</h4>
-      ${ai ? `<span class="ai-tag">${ico('spark')}AI flag</span>` : `<span class="chip">Rule</span>`}<span class="chip ${s.confidence.startsWith('High') ? 't' : ''}">${esc(s.confidence)}</span></div>
+    <div class="top1"><span class="sig ${urgent ? 'o' : ''}">${RULE(s.code)}</span><h4>${esc(s.title)}</h4>
+      ${ai ? `<span class="ai-tag">${ico('spark')}AI flag</span>` : `<span class="chip">Automatic</span>`}<span class="chip ${s.confidence.startsWith('High') ? 't' : ''}">${esc(s.confidence)}</span></div>
     <div class="rule"><b>Why it fired:</b> ${esc(s.rule)}</div>
     <ul class="ev">${s.evidence.map(e => `<li><span>${recChip(e.rec, p.id)}</span>${srcChip(e.src)}<span>${esc(e.text)}</span></li>`).join('')}</ul>
     ${s.guards.length ? `<div class="guards"><span class="note" style="width:100%">Checked before alerting:</span>${s.guards.map(g => `<span class="chip t">${ico('check')}${esc(g)}</span>`).join('')}</div>` : ''}
@@ -214,10 +216,10 @@ function member() {
   const p = P(S.pid);
   const sigs = p.signals.length ? p.signals.map(s => signalCard(p, s)).join('')
     : `<div class="empty">${ico('check')} No signal fired for ${esc(first(p))}. ${esc(p.why.join(' · '))}.<br>The queue shows her/him so Maria knows this member <b>can wait</b>.</div>`;
-  const sup = p.suppressed.map(s => `<div class="held" style="margin-bottom:12px"><h4>${ico('eyeoff')}${s.code} ${esc(s.title)}: held back</h4><p style="margin:3px 0;font-size:12.5px">${esc(s.reason)}</p><div class="row" style="gap:4px">${s.evidence.map(e => recChip(e.rec, p.id)).join('')}${flaw('IMP-P5-02')}</div></div>`).join('');
+  const sup = p.suppressed.map(s => `<div class="held" style="margin-bottom:12px"><h4>${ico('eyeoff')}${esc(s.title)}: held back</h4><p style="margin:3px 0;font-size:12.5px">${esc(s.reason)}</p><div class="row" style="gap:4px">${s.evidence.map(e => recChip(e.rec, p.id)).join('')}${flaw('IMP-P5-02')}</div></div>`).join('');
   return `${ptabs('member')}${header(p)}${alerts(p)}
   <div class="grid2" style="margin-top:12px">
-    <div><div class="row" style="margin-bottom:8px"><span class="n" style="width:22px;height:22px;border-radius:7px;background:var(--orange);display:grid;place-items:center;font-weight:800;font-size:11.5px">1</span><h3 style="margin:0;font-size:15px">Signals: what changed and what to do</h3><span class="note">Each one cites its records. Click an ID.</span></div>${sigs}${sup}</div>
+    <div><div class="row" style="margin-bottom:8px"><span class="n" style="width:22px;height:22px;border-radius:7px;background:var(--orange);display:grid;place-items:center;font-weight:800;font-size:11.5px">1</span><h3 style="margin:0;font-size:15px">Alerts: what changed and what to do</h3><span class="note">Each one cites its records. Click an ID.</span></div>${sigs}${sup}</div>
     <div class="stack">${conflicts(p)}${medsCard(p)}${missingCard(p)}</div>
   </div>
   <div style="margin-top:14px">${timeline(p)}</div>`;
@@ -261,7 +263,7 @@ function prep() {
           <div class="row" style="margin-top:8px"><button class="btn sm" data-act="sms">${ico('msg')}Queue text</button><span class="note">Template only. AI never writes to members.</span></div></div>`
           : `<div class="locked">${ico('lock')}<div>No text consent on file for any working number. <b>Ask for consent on the first call</b>, then this unlocks.</div></div>`}
       </div></div>
-      ${allActs.length ? `<div class="card"><div class="hd"><span class="n">3</span><h3>Call plan</h3><span class="sub">from the confirmed signals</span></div><div class="bd acts" style="margin:0;border:0">${allActs.map(x => `<label><input type="checkbox"><span><span class="sig" style="height:18px;min-width:24px;font-size:10px">${x.s}</span> ${esc(x.a)}</span></label>`).join('')}</div></div>` : ''}
+      ${allActs.length ? `<div class="card"><div class="hd"><span class="n">3</span><h3>Call plan</h3><span class="sub">from the alerts</span></div><div class="bd acts" style="margin:0;border:0">${allActs.map(x => `<label><input type="checkbox"><span><span class="sig" style="height:18px;min-width:24px;font-size:10px">${RULE(x.s)}</span> ${esc(x.a)}</span></label>`).join('')}</div></div>` : ''}
     </div>
     <div class="card" id="aibrief"><div class="hd"><span class="n">4</span><h3>30-second call brief</h3><span class="ai-tag" style="margin-left:auto">${ico('spark')}AI draft · Maria verifies</span></div><div class="bd">${brief}</div>
       <div class="bd" style="border-top:1px solid var(--line)"><button class="btn primary" data-act="nav" data-route="doc">${ico('file')}After the call: document it ${ico('arrow')}</button></div></div>
@@ -417,7 +419,7 @@ function dismissModal(k) {
 /* -------------------------------------------------------------------- tour */
 const TOUR = [
   { r: 'today', el: '#hello', t: 'Monday 08:00: the work is already sorted', x: 'Maria has 48 cases and time for only a handful of real calls. Instead of opening six systems, she starts here: the weekend\'s feeds have been read, checked and ranked.' },
-  { r: 'today', el: '#q-P1', t: 'Why Dorothy is #1: the maths is visible', x: 'Clinical risk 5 × time window 3 × reachability 0.8 = 12.0. Her hospital claim won\'t arrive until ~4 Dec; the rank comes from the discharge feed, the discharge summary and a rejected pharmacy claim. Try ▲▼: it asks Maria why.' },
+  { r: 'today', el: '#q-P1', t: 'Why Dorothy is #1: the maths is visible', x: 'How serious (5) × how soon the deadline (3) × chance of reaching her (0.8) = 12.0. Her hospital claim won\'t arrive until ~4 Dec; the rank comes from the discharge feed, the discharge summary and a rejected pharmacy claim. Try ▲▼: it asks Maria why.' },
   { r: 'today', el: '#heldback', t: 'The alert that did NOT fire', x: 'Retail data says Margaret\'s blood thinner is 30 days overdue. A guard checked mail order: a 90-day box is in tomorrow\'s batch. Holding back false alarms is what makes Maria trust the real ones.' },
   { r: 'member', id: 'P1', el: '#sig-S3', t: 'An unsafe mix-up, with receipts', x: 'Lisinopril was stopped at discharge but auto-refilled Saturday, while the new Entresto was rejected for prior authorisation. Together they\'re dangerous. Click any record ID: every line traces back to the Excel annex.' },
   { r: 'member', id: 'P1', el: '#conflicts', t: 'Disagreements are shown, not hidden', x: 'Discharge summary vs. pharmacy, survey vs. case note. Each side shows source and date; the newer clinical fact is suggested, and Maria decides.' },

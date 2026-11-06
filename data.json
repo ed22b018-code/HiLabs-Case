@@ -19,11 +19,11 @@
    "window": 3,
    "reach": 0.8,
    "why": [
-    "Day 3 of 7 after HF discharge",
-    "New HF meds unfilled; stopped ACE inhibitor refilled",
+    "Day 3 of 7 after heart-failure discharge",
+    "New heart medicine not dispensed; stopped one refilled",
     "Daughter reachable evenings"
    ],
-   "nba": "Call now. Resolve Entresto PA, cancel lisinopril, book PCP by Fri with a ride",
+   "nba": "Call now. Get the new heart medicine approved, stop lisinopril, book her doctor by Friday with a ride",
    "scenario": "Fresh heart-failure discharge with a dangerous medication mix-up",
    "contacts": [
     {
@@ -558,11 +558,11 @@
    "window": 3,
    "reach": 0.65,
    "why": [
-    "FUH 7-day window closes Wed",
+    "7-day follow-up deadline closes Wed",
     "Shelter; prepaid phone",
-    "Meds run out 18 Nov"
+    "Medicine runs out 18 Nov"
    ],
-   "nba": "Text first, loop in BH counsellor, book Tue 15:00 tele slot, get shelter release",
+   "nba": "Text first, involve his counsellor, book the Tue 15:00 video visit, get his release for the shelter",
    "scenario": "Behavioral-health discharge to a shelter, FUH clock running",
    "fuh": {
     "discharged": "Wed 4 Nov",
@@ -931,11 +931,11 @@
    "window": 2,
    "reach": 0.9,
    "why": [
-    "ED fall Sat on an anticoagulant",
-    "Home-health auth pending 90 h",
-    "Caregiver strain noted twice"
+    "Fall on a blood thinner Saturday",
+    "Home-nurse approval pending 90 h",
+    "Carer strain noted twice"
    ],
-   "nba": "Call Linda after 7 pm: confirm apixaban 2.5 mg, escalate auth, offer respite",
+   "nba": "Call Linda after 7 pm: confirm the 2.5 mg dose, push the home-nurse approval, offer respite",
    "scenario": "Senior after a fall; caregiver near breaking point; one false-alarm trap",
    "contacts": [
     {
@@ -1405,11 +1405,11 @@
    "window": 2,
    "reach": 0.6,
    "why": [
-    "3 ED visits in 66 days",
-    "No controller inhaler since June",
+    "3 ER visits in 66 days",
+    "No daily inhaler since June",
     "New mobile found Saturday"
    ],
-   "nba": "Confirm identity match, call the new mobile midday, stop auto-closure, book PCP",
+   "nba": "Confirm it is her, call the new mobile at midday, stop the auto-close, book her doctor",
    "scenario": "Unreachable frequent ED user with a split identity",
    "identity": {
     "rec": "CG-901455",
@@ -1858,7 +1858,7 @@
     "A1c 8.1 → 9.4",
     "Answers at lunch, in Spanish"
    ],
-   "nba": "Call at 12:30 in Spanish. Explore side effects and cost; loop in PCP",
+   "nba": "Call at 12:30, in Spanish. Ask about side effects and cost; loop in his doctor",
    "scenario": "Rising-risk diabetic who quietly stopped one refill",
    "contacts": [
     {
