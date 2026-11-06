@@ -234,7 +234,7 @@ function aiMeta(r) {
 function prep() {
   const p = P(S.pid);
   const cs = [...p.contacts].sort((a, b) => a.rank - b.rank);
-  const textable = cs.find(c => c.textConsent === 'Yes' && !/Locked/.test(c.status));
+  const textable = cs.find(c => /^Yes/.test(c.textConsent) && !/Locked/.test(c.status));
   const br = S.ai['brief:' + p.id];
   let brief;
   if (!br) brief = `<div class="empty">${ico('spark')} One click turns ${p.recordIds.length} records into a 30-second brief.<br>The model may only use this member's records; any line without a valid record ID is thrown out.<div style="margin-top:10px"><button class="btn orange" data-act="ai" data-mode="brief">${ico('spark')}Generate call brief</button></div></div>`;
