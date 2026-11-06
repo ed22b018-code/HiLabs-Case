@@ -129,11 +129,14 @@ function validate(mode, p, out) {
 
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
+  let b;
   if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, keyConfigured: !!process.env.GEMINI_API_KEY, working: WORKING });
-  }
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  let b = req.body; if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = {}; } }
+    const q = req.query || {};
+    if (!q.mode) return res.status(200).json({ ok: true, keyConfigured: !!process.env.GEMINI_API_KEY, working: WORKING });
+    b = { mode: q.mode, patientId: q.patientId };   // GET ?mode=brief&patientId=P1 for quick checks
+  } else if (req.method === 'POST') {
+    b = req.body; if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = {}; } }
+  } else return res.status(405).json({ error: 'GET or POST' });
   const { mode, patientId } = b || {};
   const p = DATA.patients.find(x => x.id === patientId);
   if (!p || !['brief', 'note'].includes(mode)) return res.status(400).json({ error: 'bad request' });
