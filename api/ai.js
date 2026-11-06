@@ -6,7 +6,7 @@
 const DATA = require('../data.json');
 
 const MODELS = (process.env.GEMINI_MODEL ? [process.env.GEMINI_MODEL] : [])
-  .concat(['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.5-flash']);
+  .concat(['gemini-flash-lite-latest', 'gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-flash-latest']);
 let WORKING = null; // {endpoint, model} cached across warm invocations
 
 const HITS = new Map(); // naive per-IP rate limit (per warm instance)
