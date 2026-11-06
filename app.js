@@ -5,7 +5,7 @@ const S = {
   order: [], filter: 'all', legacy: false, log: [],
   sig: {}, open: {}, acts: {}, idMatch: {}, utr: {}, conf: {},
   ai: {}, tx: {}, qn: {}, chk: {}, rev: {}, edit: {}, signed: {}, start: {},
-  tasks: [], tour: -1, menu: false, health: null, extra: {}, skip: {}, conn: {}, att: {}, dial: {}, dead: {}, idv: {}, interp: {},
+  tasks: [], tour: -1, menu: false, health: null, extra: {}, skip: {}, conn: {}, att: {}, dial: {}, dead: {}, idv: {}, interp: {}, upd: {}, langSet: {},
 };
 const RULE = { S1: 'New discharge medicine not picked up', S2: 'Follow-up visit or approval at risk', S3: 'Medicine lists disagree', S4: 'Refills lapsing while risk rises',
   S5: 'A better phone number exists', S6: 'ER used instead of a doctor', S7: 'Social need blocking care', S8: 'Carer under strain' };
@@ -31,7 +31,11 @@ const when = bt => /\d|morning|afternoon|midday|evening|lunch|after/i.test(bt) ?
 const OUT = { na: 'No answer', vm: 'Left voicemail', wrong: 'Wrong number' };
 const OWNERS = ['Maria', 'Pharmacist', 'Social worker', 'Community health worker', "Doctor's office", 'BH counsellor'];
 const DOB = { P1: '14 Mar 1948', P2: '2 Jun 1965', P3: '21 Jan 1992', P4: '9 Sep 1979', P5: '30 Jan 1942' };
-const interpBtn = (p, dark) => S.interp[p.id] ? `<span class="chip t">${ico('check')}Spanish interpreter on the line</span>` : `<button class="btn ${dark ? 'lg esc' : 'sm'}" data-act="interp">${ico('user')}Add Spanish interpreter</button>`;
+const langName = p => p.languageFlag ? 'Spanish' : p.language;
+const needsInterp = p => p.languageFlag || !['English', 'Other'].includes(p.language);
+const interpBtn = (p, dark) => S.interp[p.id] ? `<span class="chip t">${ico('check')}${esc(langName(p))} interpreter on the line</span>` : `<button class="btn ${dark ? 'lg esc' : 'sm'}" data-act="interp">${ico('user')}Add ${esc(langName(p))} interpreter</button>`;
+const LANGS = ['English', 'Spanish', 'Vietnamese', 'Polish', 'Arabic', 'Other'];
+function curC(p) { const cs = [...p.contacts].sort((a, b) => a.rank - b.rank), best = cs.find(c => !/Disconnected|Locked/.test(c.status)) || cs[0]; const num = S.dial[p.id] || best.number; return cs.find(x => x.number === num) || best; }
 const CAREPLAN = {
   P1: [{ problem: 'Heart failure after discharge', goal: 'No readmission in 30 days; weight within 2 lb of discharge', steps: ['Daily weights; call if +2 lb in a day or +5 lb in a week', 'Doctor visit by Fri 13 Nov'], status: 'At risk', after: 'At risk', note: '+4 lb since discharge, escalated to her doctor today' },
     { problem: 'Medicine safety', goal: 'Takes the right heart medicines, as prescribed', steps: ['Stop lisinopril (discharge instruction)', 'New heart medicine approved and delivered'], status: 'At risk', after: 'In progress', note: 'Urgent approval requested; lisinopril refill being cancelled' },
@@ -124,7 +128,7 @@ function today() {
 }
 /* ------------------------------------------------------------------ MEMBER */
 function head(p, compact) {
-  const lang = p.languageFlag ? `<b style="color:var(--odark)">Spanish (file says English)</b>` : `<b>${esc(p.language)}</b>`;
+  const lang = p.languageFlag ? `<b style="color:var(--odark)">Spanish (file says English)</b>` : `<b>${esc(p.language)}</b>${S.langSet[p.id] ? ` <span class="chip t">updated on call</span>` : ''}`;
   return `<div class="mhead"><div class="avatar">${ini(p)}</div><div class="nm"><h1>${esc(p.name)} <span class="chip g">${p.age} ${p.sex}</span><span class="chip">${esc(p.plan)}</span></h1>
     <div class="facts"><span>${esc(p.program)}</span><span>Doctor <b>${esc(p.pcp)}</b></span><span>Language ${lang}</span>${p.authRep !== '—' ? `<span>Can speak for ${p.sex === 'F' ? 'her' : 'him'} <b>${esc(p.authRep.split(',')[0])}</b></span>` : ''}</div></div>
     <div class="act">${tier(p)}${compact ? '' : `<button class="btn primary lg" id="startcall" data-act="call" data-id="${p.id}">${ico('phone')}Start call</button>`}</div></div>`;
@@ -184,7 +188,8 @@ function contactRows(p, withCall) {
 function tabContacts(p) {
   const earlier = p.timeline.filter(t => t.src === 'CON').sort((a, b) => b.at.localeCompare(a.at));
   const mine = (S.att[p.id] || []).slice().reverse();
-  return `<div class="card"><table class="t"><thead><tr><th>Number</th><th>Type</th><th>Best time</th><th>Texts</th><th>Status</th></tr></thead><tbody>${contactRows(p)}</tbody></table></div>
+  const u = S.upd[p.id] || [];
+  return `${u.length ? `<div class="ban t" style="margin-bottom:12px">${ico('check')}<div class="tx"><b>Updated on today's call:</b> ${u.map(x => `${esc(x.f)} → ${esc(x.to)}`).join(' · ')}</div></div>` : ''}<div class="card"><table class="t"><thead><tr><th>Number</th><th>Type</th><th>Best time</th><th>Texts</th><th>Status</th></tr></thead><tbody>${contactRows(p)}</tbody></table></div>
     <div class="card" style="margin-top:14px"><div class="hd"><h3>Call attempts</h3><span class="chip">${earlier.length + mine.length}</span><span class="r dim" style="font-size:12px">4 failed attempts → “unable to reach” review</span></div>
     <table class="t"><tbody>${mine.map(a => `<tr><td class="dim" style="width:110px">Today ${a.at}</td><td>${esc(a.num)}</td><td class="bad">${esc(OUT[a.out])}</td><td class="dim">Maria</td></tr>`).join('')}
     ${earlier.map(t => `<tr><td class="dim" style="width:110px">${fdate(t.at)}</td><td colspan="2">${esc(t.text)}</td><td>${rec(t.rec, p.id, 1)}</td></tr>`).join('') || ''}</tbody></table></div>`;
@@ -251,7 +256,7 @@ function prep(p) {
         <div class="bestnum"><div style="flex:1"><div class="n">${esc(best.number)}</div><div class="w">${esc(best.owner)} · ${esc(best.bestTime)}</div></div><button class="btn teal lg" data-act="dial" data-n="${esc(best.number)}">${ico('phone')}Call</button></div>
         ${cs.filter(c => c !== best).map(c => { const dead = /Disconnected|Locked/.test(c.status);
           return `<div class="othernum ${dead ? 'dead' : ''}"><span class="n">${esc(c.number)}</span><span class="dim" style="flex:1">${esc(c.owner.split(',')[0])} · ${esc(c.bestTime)}</span>${/Locked/.test(c.status) ? `<span class="chip g">${ico('lock')}Needs release</span>` : dead ? '<span class="chip g">Dead</span>' : `<button class="btn sm" data-act="dial" data-n="${esc(c.number)}">Call</button>`}</div>`; }).join('')}
-        ${p.languageFlag ? `<div class="othernum"><span class="dim" style="flex:1">${ico('user')} Prefers Spanish</span>${interpBtn(p)}</div>` : ''}
+        ${needsInterp(p) ? `<div class="othernum"><span class="dim" style="flex:1">${ico('user')} Prefers ${esc(langName(p))}</span>${interpBtn(p)}</div>` : ''}
       </div>
       <div class="card" style="margin-top:14px"><div class="hd"><h3>If no answer</h3></div><div class="bd">
         ${textable ? `<div style="display:flex;gap:10px;align-items:center"><span class="dim" style="flex:1;font-size:12.5px">Callback text to ${esc(textable.number)} · no health details</span><button class="btn sm" data-act="sms">${ico('msg')}Send text</button></div>`
@@ -292,7 +297,7 @@ function live(p) {
   const rep = p.authRep !== '—' ? p.authRep.split(' ')[0] + ' (authorised)' : null;
   const speakers = [first(p), ...(rep ? [rep] : [])], who = v.with || (rep && !c.owner.includes(first(p)) ? rep : first(p));
   return `<div class="live"><div class="av">${ini(p)}</div><div class="who"><b>${esc(p.name)}</b><span>${esc(num)} · ${esc(c.owner.split(',')[0])}</span></div>
-      <div class="tm" id="timer">00:00</div>${p.languageFlag ? interpBtn(p, true) : ''}<button class="btn lg esc" data-act="escal">${ico('alert')}Escalate</button><button class="btn red lg" data-act="nav" data-h="call/${p.id}/wrap">${ico('endcall')}End call</button></div>
+      <div class="tm" id="timer">00:00</div>${needsInterp(p) ? interpBtn(p, true) : ''}<button class="btn lg esc" data-act="escal">${ico('alert')}Escalate</button><button class="btn red lg" data-act="nav" data-h="call/${p.id}/wrap">${ico('endcall')}End call</button></div>
     <div class="cgrid"><div>
       <div class="card idc ${ok ? 'ok' : ''}" id="idcheck"><div class="hd"><h3>${ok ? ico('check') + ' Identity verified' : 'Verify identity first'}</h3><span class="r dim" style="font-size:12px">${ok ? esc(who) : 'Before any health details'}</span></div>
         ${ok ? '' : `<div class="bd"><div class="sp">Speaking with ${speakers.map(s => `<button class="fbtn ${who === s ? 'on' : ''}" data-act="with" data-v="${esc(s)}">${esc(s)}</button>`).join('')}</div>
@@ -302,7 +307,19 @@ function live(p) {
         <div class="bd checklist">${grp('q', 'Questions to consider', aiQs ? `<span class="ai">${ico('spark')}AI</span>` : `<span class="chip g">Template</span>`)}${grp('a', 'Steps from the alerts', '<span class="chip">Rules</span>')}${grp('m', 'Added by Maria', '')}
           <div class="addrow"><input id="addi" placeholder="Add your own item…" autocomplete="off"><button class="btn sm" data-act="add">Add</button></div>
           <p class="hint">${ico('shield')}Suggestions only. Maria decides what to ask and do; nothing here is a clinical order.</p></div></div></div>
-      <div class="card"><div class="hd"><h3>Quick notes</h3><span class="r chip g">${ico('file')}Transcript on</span></div><div class="bd"><textarea id="qn" data-qn="${p.id}" rows="9" placeholder="Anything worth remembering…">${esc(S.qn[p.id] || '')}</textarea></div></div></div>`;
+      <div><div class="card"><div class="hd"><h3>Quick notes</h3><span class="r chip g">${ico('file')}Transcript on</span></div><div class="bd"><textarea id="qn" data-qn="${p.id}" rows="6" placeholder="Anything worth remembering…">${esc(S.qn[p.id] || '')}</textarea></div></div>
+      ${updCard(p, c, ok)}</div></div>`;
+}
+function updCard(p, c, ok) {
+  const u = S.upd[p.id] || [], curL = p.languageFlag ? 'English' : p.language;
+  return `<div class="card upd ${ok ? '' : 'gated'}" id="updcard" style="margin-top:14px"><div class="hd"><h3>Update member details</h3><span class="r dim" style="font-size:12px">Heard something new? Change it once</span></div><div class="bd">
+    <div class="uf"><label>Preferred language<select id="u-lang">${LANGS.map(l => `<option ${l === curL ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+      <label>Best time to call<input id="u-time" value="${esc(c.bestTime)}"></label>
+      <label>Texts OK on ${esc(c.number)}<select id="u-txt"><option value="">No change</option><option>Yes</option><option>No</option></select></label>
+      <label>New phone number<input id="u-num" placeholder="(312) 555-…" autocomplete="off"></label>
+      <label class="w">Anything else (moved, new carer…)<input id="u-oth" placeholder="Optional" autocomplete="off"></label></div>
+    <div class="ufoot"><span class="dim">Shows up in the profile, contacts, future calls and tasks</span><button class="btn sm teal" data-act="upd">${ico('check')}Save</button></div>
+    ${u.length ? `<ul class="ulog">${u.map(x => `<li>${ico('check')}<span><b>${esc(x.f)}</b> ${x.from ? `<s>${esc(x.from)}</s> → ` : ''}${esc(x.to)}<small>${esc(x.where)}</small></span></li>`).join('')}</ul>` : ''}</div></div>`;
 }
 function wrap(p) {
   if (!p.hero) return `<div class="card"><div class="done-hero"><div class="tick">${ico('check')}</div><h2>Routine call logged</h2><p class="dim">Nothing else to document for ${esc(first(p))} today.</p>
@@ -311,7 +328,7 @@ function wrap(p) {
   if (S.signed[p.id] && r?.result) {
     const n = r.result;
     return `<div class="card"><div class="done-hero"><div class="tick">${ico('check')}</div><h2 style="margin:0">Signed at ${S.signed[p.id]}</h2><p class="dim" style="margin:4px 0 0">One signature, five places updated.</p>
-      <div class="fan"><div>${ico('file')}Case note</div><div>${ico('list')}Care plan</div><div>${ico('tasks')}${n.tasks.length} tasks</div><div>${ico('phone')}Contact record</div><div>${ico('shield')}Quality team<small>evidence for review</small></div></div>
+      <div class="fan"><div>${ico('file')}Case note</div><div>${ico('list')}Care plan</div><div>${ico('tasks')}${n.tasks.length} tasks</div><div>${ico('phone')}Contact record${(S.upd[p.id] || []).length ? `<small>${S.upd[p.id].length} detail${S.upd[p.id].length > 1 ? 's' : ''} updated</small>` : ''}</div><div>${ico('shield')}Quality team<small>evidence for review</small></div></div>
       <div style="display:flex;gap:8px;justify-content:center"><button class="btn" data-act="nav" data-h="m/${p.id}/plan">See care plan</button><button class="btn primary" data-act="next">Next member ${ico('arrow')}</button></div></div></div>`;
   }
   const tx = S.tx[p.id] ?? p.transcript;
@@ -449,6 +466,7 @@ const TOUR = [
   { h: 'call/P1/prep', el: '#briefcard', t: 'A 30-second brief', x: "AI read only Dorothy's records. Every line cites a source, or the server deletes it." },
   { h: 'call/P1/live', pre: () => { delete S.conn.P1; }, el: '#outcome', t: "Most calls don't connect", x: 'Maria logs what happened. If nobody answers, the workbench suggests the next move: a callback text, another number, or a retry task. Attempts count toward the “unable to reach” review.' },
   { h: 'call/P1/live', pre: () => { S.conn.P1 = 'yes'; S.start.P1 = Date.now(); }, el: '#idcheck', t: 'Verify, then talk', x: 'Two identifiers before any health details. Then a suggested checklist: AI questions plus steps from the alerts. Maria ticks, skips, adds or escalates.' },
+  { h: 'call/P1/live', pre: () => { S.conn.P1 = 'yes'; S.idv.P1 = { ...(S.idv.P1 || {}), dob: true, addr: true }; }, el: '#updcard', t: 'Heard something new? Update it once', x: 'Say Dorothy tells Maria she is more comfortable in Spanish. Maria changes it here, once. The profile, contacts, future calls (interpreter) and tasks all pick it up.' },
   { h: 'call/P1/wrap', el: '#notecard', t: 'Wrap up in minutes', x: 'AI drafts the note from the call. Maria checks each field and signs once.' },
   { h: 'm/P1/plan', el: '#careplan', t: 'It lands on the care plan', x: 'Signing updates each problem, goal and step, creates tasks, and sends evidence to the quality team for review.' },
   { h: 'm/P3/alerts', el: '#ban-id', t: 'Same person?', x: "Keisha's ER visit was filed as “KEYSHA” with a new hospital ID. Records never merge by themselves: Maria confirms." },
@@ -458,7 +476,7 @@ const TOUR = [
 const EXPLAIN = {
   today: ['Today', "Who needs Maria first, and why. Tiers: Urgent, Today, This week, Routine. Tap a score for its maths, a row to open the member; ▲▼ re-orders and asks for a reason."],
   m: ['Member view', 'One member on one screen: alerts with their proof, the care plan, medicines, timeline and contacts. The suggested next step and Start call sit on the right.'],
-  call: ['Call', 'Prepare, call, wrap up. Maria logs the outcome of every dial. On a connected call she verifies identity first; the checklist is only a suggestion. AI drafts the note; nothing is saved until she signs.'],
+  call: ['Call', 'Prepare, call, wrap up. Maria logs the outcome of every dial. On a connected call she verifies identity first; the checklist is only a suggestion. If she learns something new (language, best time, a new number) she updates it once and it shows everywhere. AI drafts the note; nothing is saved until she signs.'],
   tasks: ['Tasks', 'Deadlines this week plus every task created when Maria signs a call note.'],
   insights: ['Insights', 'For the clinical lead: how each alert rule performs and how fresh each data feed is.'],
 };
@@ -481,6 +499,7 @@ function showMenu(on) {
       <button class="btn" data-act="scoreex">${ico('chart')}How is priority calculated?</button>
       <button class="btn" data-act="legacy">${ico('list')}${S.legacy ? 'Back to the ranked list' : "Compare with today's worklist"}</button>
       <button class="btn" data-act="flaws">${ico('alert')}${document.body.classList.contains('flaws') ? 'Hide' : 'Show'} record IDs & planted traps</button>
+      <a class="btn" href="HiLabs_Synthetic_Patients_Annex.xlsx" download>${ico('file')}Download the data (Excel)</a>
       <button class="btn ghost" data-act="reset">Reset demo</button></div>`);
 }
 function tourGo(i) {
@@ -569,7 +588,21 @@ function onClick(e) {
     retry: () => { const c = [...p.contacts].sort((a, b) => a.rank - b.rank)[0]; S.tasks.push({ task: `Retry call to ${first(p)} (${when(c.bestTime)})`, owner: 'Maria', due: when(c.bestTime) === 'later' ? 'Today' : c.bestTime, pid: p.id, done: false, from: 'Attempt' }); toast('Retry task added'); },
     idv: () => { (S.idv[p.id] ||= {})[d.k] = t.checked; render(true); },
     with: () => { (S.idv[p.id] ||= {}).with = d.v; render(true); },
-    interp: () => { S.interp[p.id] = true; render(true); toast('Spanish interpreter added to the call'); },
+    interp: () => { S.interp[p.id] = true; render(true); toast(langName(p) + ' interpreter added to the call'); },
+    upd: () => { const c = curC(p), at = clock(), ch = [], places = new Set(), v = id => ($(id)?.value || '').trim();
+      if (!S.dial[p.id]) S.dial[p.id] = c.number;
+      const L = v('#u-lang'), curL = p.languageFlag ? 'English' : p.language;
+      if (L && L !== curL) { p.language = L; p.languageFlag = false; S.langSet[p.id] = true;
+        const t = L === 'English' ? null : `Use a ${L} interpreter on every call; send letters in ${L}`;
+        if (t) S.tasks.push({ task: t, owner: 'Maria', due: 'This week', pid: p.id, done: false, from: 'Update' });
+        ch.push({ f: 'Language', from: curL, to: L, where: t ? 'Profile · interpreter on future calls · task added' : 'Profile' }); ['Profile', 'Future calls', 'Tasks'].forEach(x => places.add(x)); }
+      const bt = v('#u-time'); if (bt && bt !== c.bestTime) { ch.push({ f: 'Best time', from: c.bestTime, to: bt, where: 'Contacts · retry tasks use it' }); c.bestTime = bt; c.source = 'CASE'; c.updated = '2026-11-09'; places.add('Contacts'); places.add('Retry timing'); }
+      const tx = v('#u-txt'); if (tx && !(tx === 'Yes' ? /^Yes/ : /^No/).test(c.textConsent)) { ch.push({ f: 'Texts', from: c.textConsent, to: tx === 'Yes' ? 'Yes (verbal, today)' : 'No', where: 'Contacts · callback texts' }); c.textConsent = tx === 'Yes' ? 'Yes (verbal, today)' : 'No'; c.source = 'CASE'; c.updated = '2026-11-09'; places.add('Contacts'); }
+      const nn = v('#u-num'); if (nn) { p.contacts.push({ id: 'CP-NEW' + p.contacts.length, number: nn, type: 'Mobile', owner: `${first(p)} (member)`, source: 'CASE', updated: '2026-11-09', lastSuccess: '', bestTime: bt || c.bestTime, textConsent: tx === 'Yes' ? 'Yes (verbal, today)' : 'Unknown: ask on first call', status: 'New · given on call', rank: 0, note: 'Given on the call' });
+        ch.push({ f: 'New number', from: '', to: nn, where: 'Contacts (dialled first next time) · "unable to reach" clock reset' }); places.add('Contacts'); places.add('Next call'); }
+      const o = v('#u-oth'); if (o) { S.qn[p.id] = ((S.qn[p.id] || '') + (S.qn[p.id] ? '\n' : '') + 'Update: ' + o).trim(); ch.push({ f: 'Note', from: '', to: o, where: 'Call note draft · case record' }); places.add('Call note'); }
+      if (!ch.length) { toast('Nothing changed'); return; }
+      (S.upd[p.id] ||= []).push(...ch.map(x => ({ ...x, at }))); render(true); toast(`Saved once · updated in ${places.size} place${places.size > 1 ? 's' : ''}`); },
     escal: () => reasons('Escalate to the doctor today?', 'Creates an urgent task for the doctor\'s office and flags the case.', ['Worsening symptoms (e.g. weight gain, breathlessness)', 'Medication safety issue', 'Mental-health safety concern', 'Other urgent concern'], 'escok', {}),
     escok: () => { const r = ($('input[name=rs]:checked') || {}).value; $('#modal').hidden = true; S.tasks.push({ task: `Urgent: ${r}`, owner: "Doctor's office", due: 'Today', pid: p.id, done: false, from: 'Escalation' }); render(true); toast("Escalated · doctor's office task created"); }, tnext: () => tourGo(S.tour + 1), tprev: () => tourGo(S.tour - 1), tend: () => tourGo(-1),
     explain: () => { S.menu = false; const [h, x] = EXPLAIN[S.view]; say(`<div class="who">${ico('spark')}Demo guide<button class="x" data-act="bclose">${ico('x')}</button></div><h4>${h}</h4><p>${x}</p><div class="nav"><span style="flex:1"></span><button class="btn sm" data-act="bot2">More</button><button class="btn sm orange" data-act="bclose">Got it</button></div>`); },
