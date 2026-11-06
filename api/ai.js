@@ -132,6 +132,11 @@ module.exports = async (req, res) => {
   let b;
   if (req.method === 'GET') {
     const q = req.query || {};
+    if (q.models && process.env.GEMINI_API_KEY) {   // list models this key can use (names only)
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key=${process.env.GEMINI_API_KEY}`);
+      const j = await r.json().catch(() => ({}));
+      return res.status(200).json({ status: r.status, models: (j.models || []).filter(m => (m.supportedGenerationMethods || []).includes('generateContent')).map(m => m.name), error: j.error && j.error.status });
+    }
     if (!q.mode) return res.status(200).json({ ok: true, keyConfigured: !!process.env.GEMINI_API_KEY, working: WORKING });
     b = { mode: q.mode, patientId: q.patientId };   // GET ?mode=brief&patientId=P1 for quick checks
   } else if (req.method === 'POST') {
