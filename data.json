@@ -1,0 +1,2904 @@
+{
+ "anchor": "2026-11-09T08:00",
+ "caseManager": "Maria R., RN, CCM",
+ "activeCases": 48,
+ "patients": [
+  {
+   "id": "P1",
+   "member": "SYN-M-20417",
+   "name": "Dorothy Hale",
+   "age": 78,
+   "sex": "F",
+   "plan": "Medicare Advantage HMO",
+   "program": "Transitions of care · heart failure",
+   "pcp": "Dr. Alan Mercer",
+   "language": "English",
+   "authRep": "Karen Hale (daughter), HIPAA authorization 03/2025",
+   "hero": true,
+   "risk": 5,
+   "window": 3,
+   "reach": 0.8,
+   "why": [
+    "Day 3 of 7 after HF discharge",
+    "New HF meds unfilled; stopped ACE inhibitor refilled",
+    "Daughter reachable evenings"
+   ],
+   "nba": "Call now. Resolve Entresto PA, cancel lisinopril, book PCP by Fri with a ride",
+   "scenario": "Fresh heart-failure discharge with a dangerous medication mix-up",
+   "contacts": [
+    {
+     "id": "CP-1002",
+     "number": "(312) 555-0187",
+     "type": "Mobile",
+     "owner": "Karen Hale, daughter (authorised)",
+     "source": "CASE",
+     "updated": "2025-03-02",
+     "lastSuccess": "2026-06-10",
+     "bestTime": "After 18:00",
+     "textConsent": "Yes",
+     "status": "Active",
+     "rank": 2,
+     "note": "Authorised representative: evening fallback"
+    },
+    {
+     "id": "CP-1001",
+     "number": "(312) 555-0142",
+     "type": "Home",
+     "owner": "Dorothy (member)",
+     "source": "ELIG",
+     "updated": "2019-05-01",
+     "lastSuccess": "2026-06-10",
+     "bestTime": "Mornings",
+     "textConsent": "n/a",
+     "status": "Unanswered Sat & Sun (weekend RN)",
+     "rank": 1,
+     "note": "Dorothy answers mornings; husband hard of hearing"
+    }
+   ],
+   "signals": [
+    {
+     "code": "S1",
+     "title": "Discharge meds not filled",
+     "confidence": "High · 3 sources agree",
+     "measure": "TRC · medication reconciliation",
+     "mode": "Auto-detected · Maria confirms the plan",
+     "rule": "Discharged ≤7 days AND a new discharge medication has no paid fill within 72 h",
+     "evidence": [
+      {
+       "rec": "ADT-0002",
+       "src": "ADT",
+       "text": "Discharged Fri 6 Nov 14:05 from County General, disposition home"
+      },
+      {
+       "rec": "HIE-1001",
+       "src": "HIE",
+       "text": "Discharge summary: START sacubitril/valsartan 24/26 mg BID; INCREASE furosemide to 40 mg"
+      },
+      {
+       "rec": "RX-1004",
+       "src": "RX",
+       "text": "Sacubitril/valsartan REJECTED Sat 7 Nov 10:02 · NCPDP 75 Prior Authorization Required"
+      },
+      {
+       "rec": "UM-1001",
+       "src": "UM",
+       "text": "No Part D coverage determination requested yet"
+      }
+     ],
+     "guards": [
+      "No mail-order fill pending (not enrolled)",
+      "Not transferred to a SNF (no further ADT)",
+      "Member still enrolled"
+     ],
+     "actions": [
+      "Call now: confirm exactly what she is taking",
+      "Ask prescriber for an EXPEDITED coverage determination (24 h decision)",
+      "Once approved: pharmacy home delivery (CB-1002)",
+      "Teach-back on the new furosemide 40 mg dose"
+     ]
+    },
+    {
+     "code": "S3",
+     "title": "Medication lists disagree: unsafe combination",
+     "confidence": "High · discharge list vs. paid fill",
+     "measure": "TRC · medication reconciliation",
+     "mode": "Auto-flagged · Maria decides",
+     "rule": "A drug stopped at discharge is still being filled, or the same drug class differs across sources",
+     "evidence": [
+      {
+       "rec": "HIE-1001",
+       "src": "HIE",
+       "text": "Discharge summary: STOP lisinopril 10 mg (replaced by sacubitril/valsartan)"
+      },
+      {
+       "rec": "RX-1003",
+       "src": "RX",
+       "text": "Lisinopril 10 mg AUTO-REFILLED Sat 7 Nov 09:15"
+      }
+     ],
+     "guards": [
+      "Both records belong to the same member and pharmacy"
+     ],
+     "actions": [
+      "Tell Dorothy not to take lisinopril with the new heart medicine (36-hour washout required)",
+      "Ask the pharmacy to cancel the lisinopril auto-refill",
+      "Prescriber confirms the switch-over plan"
+     ]
+    },
+    {
+     "code": "S2",
+     "title": "7-day visit at risk",
+     "confidence": "High",
+     "measure": "TRC · patient engagement",
+     "mode": "Auto-detected · Maria books",
+     "rule": "Day ≥3 after discharge and no PCP visit booked or billed",
+     "evidence": [
+      {
+       "rec": "ADT-0002",
+       "src": "ADT",
+       "text": "Day 3 of 7 since discharge"
+      },
+      {
+       "rec": "DIR-0001",
+       "src": "DIR",
+       "text": "Dr. Mercer: phone verified by HiLabs 2 Nov; same-week slot Thu 12 Nov"
+      },
+      {
+       "rec": "CN-1001",
+       "src": "CASE",
+       "text": "Aug note: husband no longer drives (HRA still says 'spouse drives')"
+      }
+     ],
+     "guards": [
+      "No visit on claims or case notes"
+     ],
+     "actions": [
+      "Book Dr. Mercer Thu 12 Nov",
+      "Book plan ride benefit (CB-1001: 12 trips left)"
+     ]
+    }
+   ],
+   "suppressed": [],
+   "conflicts": [
+    {
+     "topic": "Lisinopril",
+     "severity": "Unsafe",
+     "a": {
+      "src": "HIE",
+      "rec": "HIE-1001",
+      "value": "STOP (discharge summary)",
+      "at": "7 Nov 09:12"
+     },
+     "b": {
+      "src": "RX",
+      "rec": "RX-1003",
+      "value": "Filled 10 mg × 30 days (auto-refill)",
+      "at": "7 Nov 09:15"
+     },
+     "note": "ACE inhibitor + sacubitril/valsartan is contraindicated; 36-hour washout before starting it."
+    },
+    {
+     "topic": "Furosemide dose",
+     "severity": "Check",
+     "a": {
+      "src": "HIE",
+      "rec": "HIE-1001",
+      "value": "40 mg daily (increased)",
+      "at": "7 Nov"
+     },
+     "b": {
+      "src": "RX",
+      "rec": "RX-1001",
+      "value": "20 mg daily (last fill 30 Sep)",
+      "at": "30 Sep"
+     },
+     "note": "New dose never dispensed."
+    },
+    {
+     "topic": "Transport",
+     "severity": "Stale",
+     "a": {
+      "src": "SDOH",
+      "rec": "SD-1001",
+      "value": "'Spouse drives' (HRA)",
+      "at": "2 Mar"
+     },
+     "b": {
+      "src": "CASE",
+      "rec": "CN-1001",
+      "value": "Husband no longer drives (vision)",
+      "at": "21 Aug"
+     },
+     "note": "Newer note wins; offer ride benefit."
+    }
+   ],
+   "meds": [
+    {
+     "name": "Sacubitril/valsartan 24/26 mg BID",
+     "clinical": "START",
+     "pharmacy": "Rejected: PA required (7 Nov)",
+     "status": "Not filled",
+     "rec": "RX-1004"
+    },
+    {
+     "name": "Furosemide",
+     "clinical": "40 mg daily",
+     "pharmacy": "20 mg (30 Sep)",
+     "status": "Dose change not filled",
+     "rec": "RX-1001"
+    },
+    {
+     "name": "Metoprolol succinate ER 50 mg",
+     "clinical": "Continue",
+     "pharmacy": "Filled 20 Oct",
+     "status": "OK",
+     "rec": "RX-1002"
+    },
+    {
+     "name": "Lisinopril 10 mg",
+     "clinical": "STOP",
+     "pharmacy": "Refilled 7 Nov",
+     "status": "Stopped but refilled",
+     "rec": "RX-1003"
+    }
+   ],
+   "missing": [
+    {
+     "what": "Part D coverage determination for sacubitril/valsartan",
+     "expected": "Not requested",
+     "action": "Ask prescriber: expedited, 24 h"
+    },
+    {
+     "what": "Follow-up appointment",
+     "expected": "None booked",
+     "action": "Book Thu 12 Nov"
+    },
+    {
+     "what": "Inpatient claim for 3–6 Nov stay",
+     "expected": "~4 Dec (claims lag)",
+     "action": "None: ADT + discharge summary already cover it"
+    }
+   ],
+   "labs": [
+    {
+     "test": "BNP",
+     "value": "1,240 pg/mL",
+     "flag": "H",
+     "at": "3 Nov",
+     "rec": "LAB-1001",
+     "note": "After Entresto starts, track NT-proBNP"
+    },
+    {
+     "test": "Potassium",
+     "value": "5.3 mmol/L",
+     "flag": "H",
+     "at": "6 Nov",
+     "rec": "LAB-1002",
+     "note": ""
+    },
+    {
+     "test": "Creatinine",
+     "value": "1.4 mg/dL",
+     "flag": "H",
+     "at": "6 Nov",
+     "rec": "LAB-1003",
+     "note": ""
+    }
+   ],
+   "gaps": [
+    "TRC: notification, discharge info, engagement, med rec all open"
+   ],
+   "timeline": [
+    {
+     "at": "2026-11-03 21:10",
+     "src": "ADT",
+     "rec": "ADT-0001",
+     "text": "Admitted via ED, County General (no diagnosis in message)",
+     "received": "3 Nov 21:25",
+     "visible": true
+    },
+    {
+     "at": "2026-11-06 14:05",
+     "src": "ADT",
+     "rec": "ADT-0002",
+     "text": "Discharged home",
+     "received": "6 Nov 14:20",
+     "visible": true
+    },
+    {
+     "at": "2026-11-06 14:05",
+     "src": "ADT",
+     "rec": "ADT-0003",
+     "text": "Duplicate discharge message: merged, no second task",
+     "received": "6 Nov 16:40",
+     "visible": true,
+     "flag": "IMP-P1-01"
+    },
+    {
+     "at": "2026-11-06 16:45",
+     "src": "CASE",
+     "rec": "CN-1002",
+     "text": "Transitions-of-care case auto-opened",
+     "received": "6 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-07 09:12",
+     "src": "HIE",
+     "rec": "HIE-1001",
+     "text": "Discharge summary received (EF 30%; med changes)",
+     "received": "7 Nov 09:12",
+     "visible": true
+    },
+    {
+     "at": "2026-11-07 09:15",
+     "src": "RX",
+     "rec": "RX-1003",
+     "text": "Lisinopril auto-refilled (was STOPPED)",
+     "received": "7 Nov",
+     "visible": true,
+     "flag": "IMP-P1-02"
+    },
+    {
+     "at": "2026-11-07 10:02",
+     "src": "RX",
+     "rec": "RX-1004",
+     "text": "Sacubitril/valsartan rejected: PA required",
+     "received": "7 Nov",
+     "visible": true,
+     "flag": "IMP-P1-03"
+    },
+    {
+     "at": "2026-11-07 10:15",
+     "src": "CON",
+     "rec": "AT-1001",
+     "text": "Weekend RN called home: no answer",
+     "received": "7 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-08 11:30",
+     "src": "CON",
+     "rec": "AT-1002",
+     "text": "Weekend RN called home: no answer (daughter not tried)",
+     "received": "8 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-12-04",
+     "src": "CLM",
+     "rec": "CLM-1002",
+     "text": "Inpatient claim expected (~4 weeks lag)",
+     "received": "expected ~4 Dec",
+     "visible": false,
+     "flag": "IMP-P1-04"
+    }
+   ],
+   "sources": [
+    [
+     "ADT",
+     "6 Nov 16:40"
+    ],
+    [
+     "HIE",
+     "7 Nov 09:12"
+    ],
+    [
+     "RX",
+     "7 Nov 10:02"
+    ],
+    [
+     "LAB",
+     "7 Nov"
+    ],
+    [
+     "CLM",
+     "29 Sep (stay not yet billed)"
+    ],
+    [
+     "SDOH",
+     "2 Mar (250 days)"
+    ],
+    [
+     "DIR",
+     "2 Nov"
+    ],
+    [
+     "CASE",
+     "6 Nov"
+    ]
+   ],
+   "transcript": "Mon 9 Nov 08:25 · Maria calls home line (312) 555-0142. Dorothy answers; husband Ray on speaker.\nMaria: Good morning Mrs. Hale, this is Maria, your nurse from Synthetica Health. How are you feeling since you got home Friday?\nDorothy: Tired. My ankles are a bit puffy again. I sleep on two pillows like before.\nMaria: Are you weighing yourself each morning?\nDorothy: 172 this morning. In the hospital they said 168.\nMaria: Can you read me the bottles you are taking?\nDorothy: The water pill, the small 20 milligram one. Metoprolol. And the lisinopril, they sent a new bottle Saturday.\nMaria: Did you get the new heart medicine, Entresto?\nDorothy: No. The pharmacy said the insurance needed something from the doctor.\nRay: I can't drive her anymore, my eyes. Karen works Thursdays.\nMaria: I'll call Dr. Mercer's office about the Entresto and your water pill dose this morning. Please don't start Entresto while you're still on lisinopril; the doctor will tell you when to switch. I can book Dr. Mercer for Thursday at 2 and send a ride. Is that OK?\nDorothy: Yes, Thursday is fine.\nMaria: If your weight goes up 2 pounds in a day or 5 in a week, or breathing gets harder, call us or 911. I'll call you tomorrow.",
+   "cachedBrief": {
+    "lines": [
+     {
+      "text": "Discharged Fri 6 Nov after acute-on-chronic HF (EF 30%); today is day 3 of the 7-day follow-up window.",
+      "cites": [
+       "ADT-0002",
+       "HIE-1001"
+      ]
+     },
+     {
+      "text": "New sacubitril/valsartan was never dispensed: pharmacy rejected it Sat for prior authorization (NCPDP 75); no coverage request on file.",
+      "cites": [
+       "RX-1004",
+       "UM-1001"
+      ]
+     },
+     {
+      "text": "Lisinopril was STOPPED at discharge but auto-refilled Sat; it must not overlap with sacubitril/valsartan (36-hour washout).",
+      "cites": [
+       "HIE-1001",
+       "RX-1003"
+      ]
+     },
+     {
+      "text": "Furosemide was increased to 40 mg, but the last fill is 20 mg; potassium 5.3 and creatinine 1.4 on 6 Nov.",
+      "cites": [
+       "HIE-1001",
+       "RX-1001",
+       "LAB-1002",
+       "LAB-1003"
+      ]
+     },
+     {
+      "text": "Home line unanswered twice over the weekend; authorised daughter Karen answers after 18:00. Husband no longer drives.",
+      "cites": [
+       "AT-1002",
+       "CP-1002",
+       "CN-1001"
+      ]
+     }
+    ],
+    "questions": [
+     "Which bottles are you taking right now? (read the labels)",
+     "Today's weight vs. discharge weight? Swelling or breathlessness?",
+     "Has anyone told you to stop lisinopril?",
+     "Who can take you to a visit this week?"
+    ]
+   },
+   "cachedNote": {
+    "summary": "Day-3 post-discharge HF call with member and husband. Taking lisinopril (stopped at discharge, auto-refilled) and furosemide 20 mg (discharge dose 40 mg). Sacubitril/valsartan not started: PA required. Weight 172 lb vs 168 lb at discharge, mild ankle swelling, 2-pillow orthopnoea unchanged. No transport: husband no longer drives.",
+    "fields": [
+     {
+      "label": "Symptoms",
+      "value": "Ankle swelling; 2-pillow orthopnoea (baseline); fatigue",
+      "source": "call"
+     },
+     {
+      "label": "Weight trend",
+      "value": "+4 lb since discharge (168 → 172 lb): flag for prescriber today",
+      "source": "call"
+     },
+     {
+      "label": "Medication reconciliation",
+      "value": "Lisinopril 10 mg: taking (STOP per HIE-1001) · Furosemide 20 mg: taking (discharge 40 mg) · Metoprolol 50 mg: taking · Sacubitril/valsartan: not started (PA)",
+      "source": "HIE-1001 · RX-1001 · RX-1003 · RX-1004"
+     },
+     {
+      "label": "Education",
+      "value": "Do not start sacubitril/valsartan with lisinopril; weight rules (+2 lb/day or +5 lb/week); when to call 911",
+      "source": "call"
+     },
+     {
+      "label": "Barriers",
+      "value": "Transport (husband cannot drive); prior authorization",
+      "source": "call · CN-1001"
+     },
+     {
+      "label": "Follow-up",
+      "value": "PCP Dr. Mercer Thu 12 Nov 14:00 + plan ride; nurse call Tue 10 Nov",
+      "source": "call · DIR-0001 · CB-1001"
+     }
+    ],
+    "tasks": [
+     {
+      "task": "Call Dr. Mercer: expedited coverage request for sacubitril/valsartan; confirm furosemide 40 mg; lisinopril stop + washout plan; report +4 lb",
+      "owner": "Maria",
+      "due": "Today 12:00"
+     },
+     {
+      "task": "Ask pharmacy to cancel lisinopril auto-refill",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Book ride for Thu 12 Nov 13:15 pickup",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Follow-up call: weight, meds in hand",
+      "owner": "Maria",
+      "due": "Tue 10 Nov"
+     }
+    ]
+   },
+   "recordIds": [
+    "ADT-0001",
+    "ADT-0002",
+    "ADT-0003",
+    "AT-1001",
+    "AT-1002",
+    "CB-1001",
+    "CB-1002",
+    "CLM-1002",
+    "CN-1001",
+    "CN-1002",
+    "CP-1001",
+    "CP-1002",
+    "DIR-0001",
+    "HIE-1001",
+    "LAB-1001",
+    "LAB-1002",
+    "LAB-1003",
+    "RX-1001",
+    "RX-1002",
+    "RX-1003",
+    "RX-1004",
+    "SD-1001",
+    "UM-1001"
+   ],
+   "score": 12.0,
+   "rank": 1
+  },
+  {
+   "id": "P4",
+   "member": "SYN-M-52990",
+   "name": "Marcus Reed",
+   "age": 47,
+   "sex": "M",
+   "plan": "Medicaid managed care",
+   "program": "Complex CM · behavioral health co-managed",
+   "pcp": "Dr. Helen Brooks",
+   "language": "English",
+   "authRep": "—",
+   "hero": true,
+   "risk": 4,
+   "window": 3,
+   "reach": 0.65,
+   "why": [
+    "FUH 7-day window closes Wed",
+    "Shelter; prepaid phone",
+    "Meds run out 18 Nov"
+   ],
+   "nba": "Text first, loop in BH counsellor, book Tue 15:00 tele slot, get shelter release",
+   "scenario": "Behavioral-health discharge to a shelter, FUH clock running",
+   "fuh": {
+    "discharged": "Wed 4 Nov",
+    "closes": "Wed 11 Nov",
+    "slot": "Tue 10 Nov 15:00 · Riverside BH (telehealth), verified 3 Nov"
+   },
+   "consentGate": {
+    "rec": "BH-4002",
+    "text": "1 behavioral-health record from a 42 CFR Part 2 program exists. No consent on file, so its content is hidden.",
+    "action": "Discuss consent only if Marcus wants care coordinated with that program."
+   },
+   "contacts": [
+    {
+     "id": "CP-4001",
+     "number": "(312) 555-0131",
+     "type": "Prepaid mobile",
+     "owner": "Marcus (member)",
+     "source": "ELIG",
+     "updated": "2026-02-11",
+     "lastSuccess": "2026-08-14",
+     "bestTime": "Texts answered faster",
+     "textConsent": "Yes (HRA 02/2026)",
+     "status": "Rings out / voicemail full",
+     "rank": 1,
+     "note": "Prepaid minutes run out"
+    },
+    {
+     "id": "CP-4002",
+     "number": "(312) 555-0176",
+     "type": "Office",
+     "owner": "Harbor Light Shelter case worker",
+     "source": "CBO",
+     "updated": "2026-11-05",
+     "lastSuccess": "",
+     "bestTime": "Business hours",
+     "textConsent": "n/a",
+     "status": "Locked: no release of information",
+     "rank": 2,
+     "note": "Cannot share health information until Marcus signs a release"
+    }
+   ],
+   "signals": [
+    {
+     "code": "S7",
+     "title": "Social need blocking care",
+     "confidence": "High",
+     "measure": "FUH 7-day (closes Wed 11 Nov) · SNS-E",
+     "mode": "Auto-detected · Maria confirms",
+     "rule": "Housing flag + missed visits, OR social screen >6 months old at a new event",
+     "evidence": [
+      {
+       "rec": "ADT-0021",
+       "src": "ADT",
+       "text": "Discharged 4 Nov; address: Harbor Light Shelter"
+      },
+      {
+       "rec": "SD-4001",
+       "src": "SDOH",
+       "text": "Feb HRA: 'stable housing' (271 days old)"
+      },
+      {
+       "rec": "CN-4001",
+       "src": "CASE",
+       "text": "2 psychiatry no-shows (10 Sep, 8 Oct)"
+      },
+      {
+       "rec": "HIE-4001",
+       "src": "HIE",
+       "text": "Follow-up 'to be arranged'; Z59.01 sheltered homelessness"
+      }
+     ],
+     "guards": [
+      "Content of Part 2 record not used (no consent)"
+     ],
+     "actions": [
+      "Text first (consent on file), then call",
+      "Offer the verified tele slot Tue 10 Nov 15:00 (inside the FUH window)",
+      "Ask Marcus to sign a release for the shelter case worker",
+      "Re-screen housing; update address",
+      "Ask prescriber for a 30-day aripiprazole refill before 18 Nov"
+     ]
+    }
+   ],
+   "suppressed": [],
+   "conflicts": [
+    {
+     "topic": "Address / housing",
+     "severity": "Check",
+     "a": {
+      "src": "ELIG",
+      "rec": "ELIG",
+      "value": "418 Synthetic Ave Apt 2 · HRA: 'stable'",
+      "at": "Feb"
+     },
+     "b": {
+      "src": "ADT",
+      "rec": "ADT-0021",
+      "value": "Harbor Light Shelter, 88 Synthetic Ave",
+      "at": "4 Nov"
+     },
+     "note": "Newer event wins; prompt re-screen."
+    }
+   ],
+   "meds": [
+    {
+     "name": "Aripiprazole 15 mg",
+     "clinical": "Daily (discharge)",
+     "pharmacy": "14 days filled 4 Nov",
+     "status": "Runs out 18 Nov",
+     "rec": "RX-4002"
+    },
+    {
+     "name": "Lisinopril 20 mg",
+     "clinical": "Blood pressure",
+     "pharmacy": "Last filled 2 Jul",
+     "status": "Lapsed since Aug",
+     "rec": "RX-4001"
+    }
+   ],
+   "missing": [
+    {
+     "what": "Outpatient psychiatry appointment",
+     "expected": "'To be arranged'",
+     "action": "Book Tue 10 Nov 15:00"
+    },
+    {
+     "what": "Release of information for shelter",
+     "expected": "Not signed",
+     "action": "Ask on call"
+    }
+   ],
+   "labs": [],
+   "gaps": [
+    "FUH 7-day due Wed 11 Nov",
+    "FUH 30-day due 4 Dec",
+    "SNS-E social need screening"
+   ],
+   "timeline": [
+    {
+     "at": "2026-09-10",
+     "src": "CASE",
+     "rec": "CN-4001",
+     "text": "Psychiatry no-show (1 of 2)",
+     "received": "8 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-08",
+     "src": "CASE",
+     "rec": "CN-4001",
+     "text": "Psychiatry no-show (2 of 2); possibly lost housing",
+     "received": "8 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-28 16:00",
+     "src": "ADT",
+     "rec": "ADT-0020",
+     "text": "Admitted, Riverside Behavioral Health",
+     "received": "28 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-11-04 11:30",
+     "src": "ADT",
+     "rec": "ADT-0021",
+     "text": "Discharged; address is a shelter",
+     "received": "4 Nov",
+     "visible": true,
+     "flag": "IMP-P4-01"
+    },
+    {
+     "at": "2026-11-04 13:00",
+     "src": "RX",
+     "rec": "RX-4002",
+     "text": "Aripiprazole, 14-day supply",
+     "received": "4 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-06 10:00",
+     "src": "HIE",
+     "rec": "HIE-4001",
+     "text": "Discharge summary: follow-up 'to be arranged'",
+     "received": "6 Nov",
+     "visible": true,
+     "flag": "IMP-P4-04"
+    },
+    {
+     "at": "2026-11-06 15:05",
+     "src": "CON",
+     "rec": "AT-4003",
+     "text": "Callback text sent; no reply yet",
+     "received": "6 Nov",
+     "visible": true,
+     "flag": "IMP-P4-02"
+    },
+    {
+     "at": "2026-12-01",
+     "src": "CLM",
+     "rec": "CLM-4002",
+     "text": "Inpatient psych claim expected",
+     "received": "expected ~1 Dec",
+     "visible": false
+    }
+   ],
+   "sources": [
+    [
+     "ADT",
+     "4 Nov"
+    ],
+    [
+     "HIE",
+     "6 Nov"
+    ],
+    [
+     "RX",
+     "4 Nov"
+    ],
+    [
+     "CON",
+     "6 Nov"
+    ],
+    [
+     "BH",
+     "consent-gated"
+    ],
+    [
+     "SDOH",
+     "11 Feb (271 days)"
+    ],
+    [
+     "CLM",
+     "2 Sep (stay not billed)"
+    ]
+   ],
+   "transcript": "Mon 9 Nov 10:40 · Marcus calls back from the shelter's phone after Maria's 9:15 text.\nMarcus: You texted? My phone's out of minutes.\nMaria: Thanks for calling back, Marcus. I'm Maria, your nurse. How are you doing since you left Riverside?\nMarcus: Tired. Sleeping badly in the shelter, it's loud.\nMaria: Before we go on, I ask everyone this: any thoughts of hurting yourself?\nMarcus: No. Not like before.\nMaria: Good, thank you for telling me. You're supposed to see a psychiatrist this week. There's a video slot Tuesday at 3. Could you do that?\nMarcus: The shelter has a quiet room. Tuesday works.\nMaria: Can I talk with your shelter case worker to help with rides and reminders? You'd need to sign a release.\nMarcus: Yeah, she's OK. I'll sign.\nMaria: Your aripiprazole runs out on the 18th. I'll ask for a refill. And your blood pressure pill, are you taking it?\nMarcus: Not since summer.",
+   "cachedBrief": {
+    "lines": [
+     {
+      "text": "Discharged Wed 4 Nov from Riverside Behavioral Health to Harbor Light Shelter; the FUH 7-day window closes Wed 11 Nov and nothing is booked.",
+      "cites": [
+       "ADT-0021",
+       "HIE-4001"
+      ]
+     },
+     {
+      "text": "A verified telehealth slot exists Tue 10 Nov 15:00 at Riverside BH.",
+      "cites": [
+       "DIR-0004"
+      ]
+     },
+     {
+      "text": "Aripiprazole 15 mg: 14-day supply filled 4 Nov, runs out 18 Nov. Lisinopril lapsed since August.",
+      "cites": [
+       "RX-4002",
+       "RX-4001"
+      ]
+     },
+     {
+      "text": "Prepaid phone often out of minutes; text consent on file; shelter case worker known but no release signed.",
+      "cites": [
+       "CP-4001",
+       "CP-4002"
+      ]
+     },
+     {
+      "text": "Two psychiatry no-shows (Sep, Oct); housing screen from Feb says 'stable' and is out of date.",
+      "cites": [
+       "CN-4001",
+       "SD-4001"
+      ]
+     }
+    ],
+    "questions": [
+     "How are you doing since discharge? (safety check)",
+     "Can you do a video visit Tue at 15:00?",
+     "OK to involve the shelter case worker?",
+     "Do you have enough medicine?"
+    ]
+   },
+   "cachedNote": {
+    "summary": "Member called back from shelter phone after text. Sleeping poorly; denies thoughts of self-harm. Agreed to FUH telehealth visit Tue 10 Nov 15:00 from shelter quiet room. Agreed to sign release for shelter case worker. Aripiprazole runs out 18 Nov. Not taking lisinopril since summer.",
+    "fields": [
+     {
+      "label": "Safety screen",
+      "value": "Denies thoughts of self-harm",
+      "source": "call"
+     },
+     {
+      "label": "Follow-up (FUH 7-day)",
+      "value": "Riverside BH telehealth Tue 10 Nov 15:00",
+      "source": "call · DIR-0004"
+     },
+     {
+      "label": "Housing",
+      "value": "Sheltered: Harbor Light Shelter (update address; re-screen done)",
+      "source": "call · ADT-0021"
+     },
+     {
+      "label": "Consent",
+      "value": "Verbal agreement to release for shelter case worker: written form needed",
+      "source": "call"
+     },
+     {
+      "label": "Medications",
+      "value": "Aripiprazole: taking, supply ends 18 Nov · Lisinopril: not taking since summer",
+      "source": "call · RX-4001 · RX-4002"
+     }
+    ],
+    "tasks": [
+     {
+      "task": "Book FUH visit Tue 10 Nov 15:00 and text reminder",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Send release-of-information form to shelter for signature",
+      "owner": "BH counsellor",
+      "due": "Tue 10 Nov"
+     },
+     {
+      "task": "Request 30-day aripiprazole refill before 18 Nov",
+      "owner": "Maria",
+      "due": "Wed 11 Nov"
+     },
+     {
+      "task": "Flag blood-pressure med lapse to PCP Dr. Brooks",
+      "owner": "Maria",
+      "due": "This week"
+     }
+    ]
+   },
+   "recordIds": [
+    "ADT-0020",
+    "ADT-0021",
+    "AT-4003",
+    "BH-4001",
+    "CLM-4002",
+    "CN-4001",
+    "CN-4002",
+    "CP-4001",
+    "CP-4002",
+    "DIR-0004",
+    "HIE-4001",
+    "RX-4001",
+    "RX-4002",
+    "SD-4001"
+   ],
+   "score": 7.8,
+   "rank": 2
+  },
+  {
+   "id": "P5",
+   "member": "SYN-M-60733",
+   "name": "Margaret O'Neill",
+   "age": 84,
+   "sex": "F",
+   "plan": "D-SNP (dual eligible)",
+   "program": "Complex CM · dementia, AF, CKD",
+   "pcp": "Dr. Grace Liu",
+   "language": "English",
+   "authRep": "Linda O'Neill (daughter), POA",
+   "hero": true,
+   "risk": 4,
+   "window": 2,
+   "reach": 0.9,
+   "why": [
+    "ED fall Sat on an anticoagulant",
+    "Home-health auth pending 90 h",
+    "Caregiver strain noted twice"
+   ],
+   "nba": "Call Linda after 7 pm: confirm apixaban 2.5 mg, escalate auth, offer respite",
+   "scenario": "Senior after a fall; caregiver near breaking point; one false-alarm trap",
+   "contacts": [
+    {
+     "id": "CP-5002",
+     "number": "(312) 555-0194",
+     "type": "Mobile",
+     "owner": "Linda O'Neill, daughter (POA)",
+     "source": "CASE",
+     "updated": "2024-06-01",
+     "lastSuccess": "2026-11-02",
+     "bestTime": "After 19:00",
+     "textConsent": "Yes",
+     "status": "Active",
+     "rank": 1,
+     "note": ""
+    },
+    {
+     "id": "CP-5001",
+     "number": "(312) 555-0105",
+     "type": "Home",
+     "owner": "Margaret (member)",
+     "source": "ELIG",
+     "updated": "2018-02-01",
+     "lastSuccess": "2026-09-03",
+     "bestTime": "—",
+     "textConsent": "n/a",
+     "status": "Member confused on calls",
+     "rank": 2,
+     "note": "Prefer the daughter"
+    }
+   ],
+   "signals": [
+    {
+     "code": "S8",
+     "title": "Caregiver under strain",
+     "confidence": "Medium · AI-flagged from free text",
+     "measure": "Readmission risk · caregiver support",
+     "mode": "AI flag · Maria confirms",
+     "rule": "Strain language in ≥2 notes AND caregiver is the sole support",
+     "evidence": [
+      {
+       "rec": "CN-5001",
+       "src": "CASE",
+       "text": "12 Oct: 'I can't keep up with the nights.'"
+      },
+      {
+       "rec": "CN-5002",
+       "src": "CASE",
+       "text": "2 Nov: sounds exhausted; missed work twice; asked about adult day programmes"
+      },
+      {
+       "rec": "HIE-5001",
+       "src": "HIE",
+       "text": "ED note 7 Nov: daughter says she 'can't keep up'"
+      }
+     ],
+     "guards": [
+      "HRA has no caregiver question, so the signal comes only from notes (shown with dates)"
+     ],
+     "actions": [
+      "Ask Linda how she is doing (caregiver check-in)",
+      "Offer adult day programme referral (Medicaid HCBS)",
+      "Ask home health about night support"
+     ]
+    },
+    {
+     "code": "S3",
+     "title": "Medication lists disagree",
+     "confidence": "High",
+     "measure": "Medication safety",
+     "mode": "Auto-flagged · Maria decides",
+     "rule": "Same drug differs in dose across sources",
+     "evidence": [
+      {
+       "rec": "HIE-5001",
+       "src": "HIE",
+       "text": "ED list: apixaban 5 mg twice daily (from an old paper list)"
+      },
+      {
+       "rec": "RX-5001",
+       "src": "RX",
+       "text": "Pharmacy: apixaban 2.5 mg twice daily"
+      },
+      {
+       "rec": "CLM-5002",
+       "src": "CLM",
+       "text": "12 Aug PCP visit where the dose was reduced"
+      },
+      {
+       "rec": "LAB-5001",
+       "src": "LAB",
+       "text": "Creatinine 1.6; age 84; weight 57 kg: 2.5 mg is the correct dose"
+      }
+     ],
+     "guards": [
+      "Dose criteria checked: 3 of 3 met (age ≥80, weight ≤60 kg, creatinine ≥1.5)"
+     ],
+     "actions": [
+      "Confirm with Linda which tablets she gives (2.5 mg)",
+      "Send the corrected list to Dr. Liu and the ED record"
+     ]
+    },
+    {
+     "code": "S2",
+     "title": "Authorisation stuck",
+     "confidence": "High",
+     "measure": "FMC: follow-up within 7 days of ED visit (by 14 Nov)",
+     "mode": "Auto-detected · Maria escalates",
+     "rule": "Home-health authorisation pending >72 h, or no follow-up booked after an ED visit",
+     "evidence": [
+      {
+       "rec": "UM-5001",
+       "src": "UM",
+       "text": "Home-health recertification requested Thu 5 Nov 14:00: pending 90 h (7-day clock ends Thu 12 Nov)"
+      },
+      {
+       "rec": "ADT-0031",
+       "src": "ADT",
+       "text": "ED discharge Sat 7 Nov after a fall"
+      }
+     ],
+     "guards": [],
+     "actions": [
+      "Ask UM to expedite after the fall",
+      "Book PCP within 7 days of the ED visit (by Sat 14 Nov)",
+      "Request a home-safety check"
+     ]
+    }
+   ],
+   "suppressed": [
+    {
+     "code": "S4",
+     "title": "Refill lapse: apixaban",
+     "reason": "NOT ALERTED. Retail data says apixaban is 30 days overdue, but Margaret is enrolled in mail order since October and the 90-day shipment (8 Oct) arrives in the 10 Nov mail-order batch.",
+     "evidence": [
+      {
+       "rec": "RX-5001",
+       "src": "RX",
+       "text": "Last retail fill 10 Sep (30 days)"
+      },
+      {
+       "rec": "ELIG",
+       "src": "ELIG",
+       "text": "Mail-order enrolled since Oct 2026"
+      }
+     ],
+     "instead": "Shown as a 'confirm on the call' question instead of an alarm."
+    }
+   ],
+   "conflicts": [
+    {
+     "topic": "Apixaban dose",
+     "severity": "Check",
+     "a": {
+      "src": "HIE",
+      "rec": "HIE-5001",
+      "value": "5 mg twice daily (ED list)",
+      "at": "7 Nov"
+     },
+     "b": {
+      "src": "RX",
+      "rec": "RX-5001",
+      "value": "2.5 mg twice daily (pharmacy, PCP Aug)",
+      "at": "10 Sep"
+     },
+     "note": "2.5 mg is correct: she meets all 3 dose-reduction criteria."
+    },
+    {
+     "topic": "Caregiver support",
+     "severity": "Stale",
+     "a": {
+      "src": "SDOH",
+      "rec": "SD-5001",
+      "value": "HRA: no needs (no caregiver question)",
+      "at": "5 Apr"
+     },
+     "b": {
+      "src": "CASE",
+      "rec": "CN-5002",
+      "value": "Daughter exhausted, missing work",
+      "at": "2 Nov"
+     },
+     "note": "Instrument gap: add the question on the call."
+    }
+   ],
+   "meds": [
+    {
+     "name": "Apixaban",
+     "clinical": "ED list: 5 mg BID",
+     "pharmacy": "2.5 mg BID (retail 10 Sep; mail-order 90 days 8 Oct, arriving in feed 10 Nov)",
+     "status": "Dose conflict · refill OK",
+     "rec": "RX-5001"
+    },
+    {
+     "name": "Donepezil 5 mg",
+     "clinical": "Nightly",
+     "pharmacy": "Mail order 8 Oct, 90 days",
+     "status": "OK (in 10 Nov batch)",
+     "rec": "RX-5003"
+    }
+   ],
+   "missing": [
+    {
+     "what": "Mail-order pharmacy batch (Oct)",
+     "expected": "Arrives 10 Nov",
+     "action": "Confirm refill on the call; no alert"
+    },
+    {
+     "what": "Home-health decision",
+     "expected": "Due Thu 12 Nov",
+     "action": "Ask to expedite"
+    }
+   ],
+   "labs": [
+    {
+     "test": "Creatinine",
+     "value": "1.6 mg/dL",
+     "flag": "H",
+     "at": "12 Aug",
+     "rec": "LAB-5001",
+     "note": ""
+    },
+    {
+     "test": "eGFR",
+     "value": "31",
+     "flag": "L",
+     "at": "12 Aug",
+     "rec": "LAB-5002",
+     "note": "CKD 3b"
+    }
+   ],
+   "gaps": [
+    "FMC: follow-up within 7 days of ED visit (by 14 Nov)",
+    "Caregiver support"
+   ],
+   "timeline": [
+    {
+     "at": "2026-08-12",
+     "src": "CLM",
+     "rec": "CLM-5002",
+     "text": "PCP reduced apixaban to 2.5 mg",
+     "received": "26 Aug",
+     "visible": true
+    },
+    {
+     "at": "2026-09-10",
+     "src": "RX",
+     "rec": "RX-5001",
+     "text": "Last retail apixaban fill (30 days)",
+     "received": "10 Sep",
+     "visible": true,
+     "flag": "IMP-P5-02"
+    },
+    {
+     "at": "2026-10-12 19:30",
+     "src": "CASE",
+     "rec": "CN-5001",
+     "text": "Linda: 'I can't keep up with the nights.'",
+     "received": "12 Oct",
+     "visible": true,
+     "flag": "IMP-P5-03"
+    },
+    {
+     "at": "2026-11-02 19:30",
+     "src": "CASE",
+     "rec": "CN-5002",
+     "text": "Linda exhausted; asked about adult day programmes",
+     "received": "2 Nov",
+     "visible": true,
+     "flag": "IMP-P5-03"
+    },
+    {
+     "at": "2026-11-05 14:00",
+     "src": "UM",
+     "rec": "UM-5001",
+     "text": "Home-health recertification requested",
+     "received": "5 Nov",
+     "visible": true,
+     "flag": "IMP-P5-05"
+    },
+    {
+     "at": "2026-11-07 19:20",
+     "src": "ADT",
+     "rec": "ADT-0030",
+     "text": "ED visit: fall at home",
+     "received": "7 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-08 07:40",
+     "src": "HIE",
+     "rec": "HIE-5001",
+     "text": "ED note: head CT negative; med list says apixaban 5 mg",
+     "received": "8 Nov",
+     "visible": true,
+     "flag": "IMP-P5-01"
+    },
+    {
+     "at": "2026-11-10",
+     "src": "RX",
+     "rec": "RX-5002",
+     "text": "Mail-order batch: apixaban 90 days shipped 8 Oct",
+     "received": "expected 10 Nov",
+     "visible": false,
+     "flag": "IMP-P5-02"
+    }
+   ],
+   "sources": [
+    [
+     "ADT",
+     "8 Nov"
+    ],
+    [
+     "HIE",
+     "8 Nov"
+    ],
+    [
+     "RX",
+     "10 Sep retail · mail-order batch due 10 Nov"
+    ],
+    [
+     "UM",
+     "5 Nov"
+    ],
+    [
+     "CASE",
+     "2 Nov"
+    ],
+    [
+     "SDOH",
+     "5 Apr (218 days)"
+    ]
+   ],
+   "transcript": "Mon 9 Nov 19:10 · Maria calls Linda (312) 555-0194.\nMaria: Hi Linda, it's Maria. How is your mum after Saturday's fall?\nLinda: Sore, a few stitches. The scan was fine, thank God.\nMaria: I want to check her blood thinner. The ER list says 5 milligrams. What tablets do you give her?\nLinda: The 2.5s. Dr. Liu lowered it in August. The ER copied her old list.\nMaria: And did her refill come? The pharmacy shows the last one in September.\nLinda: The mail-order box came early October, three months' worth.\nMaria: Good. The home nurse visits: are they still coming?\nLinda: They stopped. They said the approval is pending.\nMaria: I'll push on that today. And how are you doing, Linda?\nLinda: Honestly? I'm not sleeping. She's up three, four times a night. I missed work twice last week.\nMaria: That's a lot to carry alone. There's an adult day programme her Medicaid covers. Want me to start a referral?\nLinda: Yes. Please.\nMaria: Can you bring her to Dr. Liu on Thursday morning?\nLinda: Thursday at 10:30 works.",
+   "cachedBrief": {
+    "lines": [
+     {
+      "text": "ED visit Sat 7 Nov after a fall; head CT negative; she takes an anticoagulant.",
+      "cites": [
+       "ADT-0030",
+       "HIE-5001"
+      ]
+     },
+     {
+      "text": "The ED list says apixaban 5 mg twice daily; pharmacy and the Aug PCP visit say 2.5 mg, which matches her age 84, 57 kg, creatinine 1.6.",
+      "cites": [
+       "HIE-5001",
+       "RX-5001",
+       "CLM-5002",
+       "LAB-5001"
+      ]
+     },
+     {
+      "text": "Retail data shows no apixaban since 10 Sep, but she is enrolled in mail order: confirm the October shipment before assuming a lapse.",
+      "cites": [
+       "RX-5001"
+      ]
+     },
+     {
+      "text": "Home-health recertification pending 90 h (requested 5 Nov).",
+      "cites": [
+       "UM-5001"
+      ]
+     },
+     {
+      "text": "Daughter Linda (POA) reported strain twice ('can't keep up') and asked about adult day programmes; best after 19:00.",
+      "cites": [
+       "CN-5001",
+       "CN-5002",
+       "CP-5002"
+      ]
+     }
+    ],
+    "questions": [
+     "Which apixaban tablets do you give her? (2.5 or 5 mg)",
+     "Did the mail-order box arrive in October?",
+     "Are home-health visits still happening?",
+     "How are YOU doing, Linda?"
+    ]
+   },
+   "cachedNote": {
+    "summary": "Evening call with daughter/POA. Fall Sat: laceration, CT negative. Giving apixaban 2.5 mg BID (ED list wrong). Mail-order 90-day supply arrived early Oct (no lapse). Home-health visits stopped pending authorisation. Linda reports severe sleep loss, missed work; accepts adult day referral. PCP Thu 12 Nov 10:30.",
+    "fields": [
+     {
+      "label": "Medication reconciliation",
+      "value": "Apixaban 2.5 mg BID confirmed (ED list 5 mg is wrong) · Donepezil 5 mg nightly",
+      "source": "call · RX-5001 · HIE-5001"
+     },
+     {
+      "label": "Refill status",
+      "value": "Mail-order 90-day supply received early Oct: no lapse",
+      "source": "call"
+     },
+     {
+      "label": "Fall",
+      "value": "Scalp laceration repaired; CT negative; request home-safety check",
+      "source": "HIE-5001 · call"
+     },
+     {
+      "label": "Caregiver check-in",
+      "value": "Severe sleep loss; missed work twice; accepts adult day referral",
+      "source": "call · CN-5002"
+     },
+     {
+      "label": "Follow-up (FMC)",
+      "value": "Dr. Liu Thu 12 Nov 10:30",
+      "source": "call"
+     }
+    ],
+    "tasks": [
+     {
+      "task": "Ask UM to expedite home-health recertification (post-fall)",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Send corrected apixaban dose to Dr. Liu and ED",
+      "owner": "Maria",
+      "due": "Tue 10 Nov"
+     },
+     {
+      "task": "Adult day programme referral (Medicaid HCBS)",
+      "owner": "Maria",
+      "due": "Wed 11 Nov"
+     },
+     {
+      "task": "Confirm PCP visit Thu 12 Nov 10:30",
+      "owner": "Maria",
+      "due": "Wed 11 Nov"
+     }
+    ]
+   },
+   "recordIds": [
+    "ADT-0030",
+    "ADT-0031",
+    "CB-5001",
+    "CLM-5002",
+    "CN-5001",
+    "CN-5002",
+    "CP-5001",
+    "CP-5002",
+    "HIE-5001",
+    "LAB-5001",
+    "LAB-5002",
+    "RX-5001",
+    "RX-5002",
+    "RX-5003",
+    "SD-5001",
+    "UM-5001"
+   ],
+   "score": 7.2,
+   "rank": 3
+  },
+  {
+   "id": "P3",
+   "member": "SYN-M-44502",
+   "name": "Keisha Brown",
+   "age": 34,
+   "sex": "F",
+   "plan": "Medicaid managed care",
+   "program": "Complex care management · asthma",
+   "pcp": "Dr. Samuel Ortiz",
+   "language": "English",
+   "authRep": "—",
+   "hero": true,
+   "risk": 4,
+   "window": 2,
+   "reach": 0.6,
+   "why": [
+    "3 ED visits in 66 days",
+    "No controller inhaler since June",
+    "New mobile found Saturday"
+   ],
+   "nba": "Confirm identity match, call the new mobile midday, stop auto-closure, book PCP",
+   "scenario": "Unreachable frequent ED user with a split identity",
+   "identity": {
+    "rec": "CG-901455",
+    "name": "BROWN, KEYSHA",
+    "facility": "County General",
+    "confidence": 0.86,
+    "matchOn": [
+     "Date of birth matches (21 Jan 1992)",
+     "Address matches",
+     "Name: 1 letter different (Keysha / Keisha)",
+     "Different hospital MRN (CG-883120 used in Oct)"
+    ],
+    "records": [
+     "ADT-0014",
+     "ADT-0015",
+     "HIE-3002"
+    ]
+   },
+   "utr": {
+    "text": "Case set to auto-close as 'unable to reach' on 10 Nov after 4 failed calls and a returned letter.",
+    "rec": "CN-3001"
+   },
+   "contacts": [
+    {
+     "id": "CP-3002",
+     "number": "(312) 555-0158",
+     "type": "Mobile",
+     "owner": "Keisha (member)",
+     "source": "PBM pharmacy profile",
+     "updated": "2026-11-07",
+     "lastSuccess": "",
+     "bestTime": "Midday (works nights)",
+     "textConsent": "Unknown: ask on first call",
+     "status": "New, untested",
+     "rank": 1,
+     "note": "Captured at the 24-h pharmacy after Saturday's ED visit"
+    },
+    {
+     "id": "CP-3001",
+     "number": "(312) 555-0119",
+     "type": "Home",
+     "owner": "Keisha (member)",
+     "source": "ELIG",
+     "updated": "2023-08-01",
+     "lastSuccess": "2025-12-20",
+     "bestTime": "—",
+     "textConsent": "Unknown",
+     "status": "Disconnected (×4)",
+     "rank": 2,
+     "note": "Still 'primary' in eligibility"
+    }
+   ],
+   "signals": [
+    {
+     "code": "S5",
+     "title": "A better number exists",
+     "confidence": "High",
+     "measure": "Reach rate",
+     "mode": "Auto-detected · Maria calls",
+     "rule": "≥3 failed attempts on number A AND a newer number in another source",
+     "evidence": [
+      {
+       "rec": "AT-3005",
+       "src": "CON",
+       "text": "Home line 'not in service' 4 times (12 Oct – 2 Nov)"
+      },
+      {
+       "rec": "CP-3002",
+       "src": "CON",
+       "text": "New mobile in pharmacy profile, 7 Nov"
+      }
+     ],
+     "guards": [
+      "Text not suggested: no consent on file (ask on first call)"
+     ],
+     "actions": [
+      "Call (312) 555-0158 midday",
+      "Ask for text consent and best time",
+      "Pause the 'unable to reach' auto-closure"
+     ]
+    },
+    {
+     "code": "S6",
+     "title": "ED used as primary care",
+     "confidence": "High once identity confirmed",
+     "measure": "AMR asthma medication ratio (0.27 vs ≥0.50)",
+     "mode": "Auto-detected · Maria confirms",
+     "rule": "≥3 ED visits in 90 days AND no PCP visit in 6 months",
+     "evidence": [
+      {
+       "rec": "ADT-0010",
+       "src": "ADT",
+       "text": "ED Riverside 2 Sep"
+      },
+      {
+       "rec": "ADT-0012",
+       "src": "ADT",
+       "text": "ED County General 4 Oct"
+      },
+      {
+       "rec": "ADT-0014",
+       "src": "ADT",
+       "text": "ED County General 7 Nov (new MRN: confirm match)"
+      },
+      {
+       "rec": "CLM-3000",
+       "src": "CLM",
+       "text": "Last PCP visit 12 Mar"
+      },
+      {
+       "rec": "RX-3006",
+       "src": "RX",
+       "text": "5 albuterol rescue inhalers in 80 days; controller last filled 2 Jun"
+      }
+     ],
+     "guards": [
+      "Claims show only 1 of 3 visits: ED count taken from ADT"
+     ],
+     "actions": [
+      "Book PCP within 7 days using the HiLabs-verified number (312) 555-0125",
+      "Controller inhaler refill + asthma action plan",
+      "Ask what happens at night (ED vs urgent care)"
+     ]
+    }
+   ],
+   "suppressed": [],
+   "conflicts": [
+    {
+     "topic": "PCP phone",
+     "severity": "Check",
+     "a": {
+      "src": "DIR",
+      "rec": "DIR-0003",
+      "value": "(312) 555-0124 Westside Clinic (plan directory)",
+      "at": "—"
+     },
+     "b": {
+      "src": "DIR",
+      "rec": "DIR-0003",
+      "value": "Moved: (312) 555-0125 (HiLabs verification 30 Oct)",
+      "at": "30 Oct"
+     },
+     "note": "Use the verified number."
+    },
+    {
+     "topic": "ED visits",
+     "severity": "Check",
+     "a": {
+      "src": "CLM",
+      "rec": "CLM-3001",
+      "value": "1 ED visit in claims",
+      "at": "19 Oct"
+     },
+     "b": {
+      "src": "ADT",
+      "rec": "ADT-0014",
+      "value": "3 ED visits in ADT",
+      "at": "7 Nov"
+     },
+     "note": "Claims lag; ADT is the timely truth."
+    }
+   ],
+   "meds": [
+    {
+     "name": "Budesonide/formoterol (controller)",
+     "clinical": "Daily",
+     "pharmacy": "Last filled 2 Jun",
+     "status": "5 months without",
+     "rec": "RX-3001"
+    },
+    {
+     "name": "Albuterol HFA (rescue)",
+     "clinical": "As needed",
+     "pharmacy": "5 fills in 80 days",
+     "status": "Overuse",
+     "rec": "RX-3006"
+    },
+    {
+     "name": "Prednisone 40 mg × 5 days",
+     "clinical": "ED 7 Nov",
+     "pharmacy": "Filled 7 Nov",
+     "status": "OK",
+     "rec": "RX-3006"
+    }
+   ],
+   "missing": [
+    {
+     "what": "Health risk assessment",
+     "expected": "Never completed",
+     "action": "Complete on first call"
+    },
+    {
+     "what": "ED claims for 4 Oct and 7 Nov",
+     "expected": "~20 Nov / ~10 Dec",
+     "action": "None: ADT covers them"
+    }
+   ],
+   "labs": [],
+   "gaps": [
+    "AMR 0.27 (target ≥0.50)",
+    "No PCP visit since March"
+   ],
+   "timeline": [
+    {
+     "at": "2026-03-12",
+     "src": "CLM",
+     "rec": "CLM-3000",
+     "text": "Last primary-care visit (Eastside Clinic)",
+     "received": "30 Mar",
+     "visible": true
+    },
+    {
+     "at": "2026-06-02",
+     "src": "RX",
+     "rec": "RX-3001",
+     "text": "Last controller inhaler fill",
+     "received": "2 Jun",
+     "visible": true
+    },
+    {
+     "at": "2026-09-02 01:15",
+     "src": "ADT",
+     "rec": "ADT-0010",
+     "text": "ED visit, Riverside (shortness of breath)",
+     "received": "2 Sep",
+     "visible": true
+    },
+    {
+     "at": "2026-10-04 23:50",
+     "src": "ADT",
+     "rec": "ADT-0012",
+     "text": "ED visit, County General (asthma)",
+     "received": "5 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-12 10:05",
+     "src": "CON",
+     "rec": "AT-3001",
+     "text": "Home line not in service (1 of 4)",
+     "received": "12 Oct",
+     "visible": true,
+     "flag": "IMP-P3-02"
+    },
+    {
+     "at": "2026-11-02 16:10",
+     "src": "CON",
+     "rec": "AT-3005",
+     "text": "4th failure; case flagged for auto-closure",
+     "received": "2 Nov",
+     "visible": true,
+     "flag": "IMP-P3-05"
+    },
+    {
+     "at": "2026-11-07 02:30",
+     "src": "ADT",
+     "rec": "ADT-0014",
+     "text": "ED visit, County General, NEW MRN 'BROWN, KEYSHA'",
+     "received": "7 Nov",
+     "visible": true,
+     "flag": "IMP-P3-01"
+    },
+    {
+     "at": "2026-11-07 07:40",
+     "src": "RX",
+     "rec": "RX-3006",
+     "text": "Albuterol + prednisone; pharmacy captured new mobile",
+     "received": "7 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-20",
+     "src": "CLM",
+     "rec": "CLM-3002",
+     "text": "4 Oct ED claim expected",
+     "received": "expected ~20 Nov",
+     "visible": false,
+     "flag": "IMP-P3-03"
+    }
+   ],
+   "sources": [
+    [
+     "ADT",
+     "7 Nov"
+    ],
+    [
+     "RX",
+     "7 Nov"
+    ],
+    [
+     "HIE",
+     "7 Nov"
+    ],
+    [
+     "CON",
+     "7 Nov"
+    ],
+    [
+     "CLM",
+     "19 Oct (2 visits missing)"
+    ],
+    [
+     "DIR",
+     "30 Oct"
+    ],
+    [
+     "SDOH",
+     "none on file"
+    ]
+   ],
+   "transcript": "Mon 9 Nov 12:10 · Maria calls new mobile (312) 555-0158.\nMaria: Hi, is this Keisha Brown? This is Maria, a nurse with your Medicaid plan.\nKeisha: Yeah. How'd you get this number?\nMaria: The pharmacy had it from Saturday. Your old number stopped working, so I'm glad we found you. Is it OK if I text you here too?\nKeisha: Yeah, texts are better. I work nights at the warehouse.\nMaria: I saw you were in the ER Saturday for your asthma. How's your breathing today?\nKeisha: Better with the steroid. I've been using the blue inhaler every day.\nMaria: What about the purple one, the daily controller?\nKeisha: Ran out in the summer. I thought it cost money.\nMaria: On your plan it's $0. Can I ask Dr. Ortiz's office for a refill and a visit? They moved, I have the new number.\nKeisha: OK. Afternoons, after I sleep. Video is fine.\nMaria: Where do you go when it gets bad at night?\nKeisha: The ER. Nothing else is open.",
+   "cachedBrief": {
+    "lines": [
+     {
+      "text": "3 ED visits for asthma in 66 days (2 Sep, 4 Oct, 7 Nov); the 7 Nov visit is filed under a new MRN with the name spelled 'Keysha' (match 0.86).",
+      "cites": [
+       "ADT-0010",
+       "ADT-0012",
+       "ADT-0014"
+      ]
+     },
+     {
+      "text": "5 albuterol rescue fills in 80 days and no controller since 2 Jun.",
+      "cites": [
+       "RX-3006",
+       "RX-3001"
+      ]
+     },
+     {
+      "text": "Home number disconnected (4 attempts); pharmacy captured a new mobile on 7 Nov. No text consent on file.",
+      "cites": [
+       "AT-3005",
+       "CP-3002"
+      ]
+     },
+     {
+      "text": "Last PCP visit 12 Mar; the PCP clinic moved: verified number (312) 555-0125.",
+      "cites": [
+       "CLM-3000",
+       "DIR-0003"
+      ]
+     },
+     {
+      "text": "Case is set to auto-close as 'unable to reach' on 10 Nov.",
+      "cites": [
+       "CN-3001"
+      ]
+     }
+    ],
+    "questions": [
+     "Is this the best number? OK to text?",
+     "How often are you using the rescue inhaler?",
+     "What happened to the daily inhaler?",
+     "Where do you go when it's bad at night?"
+    ]
+   },
+   "cachedNote": {
+    "summary": "First successful contact via new mobile. Works nights; prefers texts. Using rescue inhaler daily; controller ran out in summer (believed it had a cost; $0 on plan). Goes to ED at night because nothing else is open. Agreed to PCP video visit and controller refill.",
+    "fields": [
+     {
+      "label": "Contact",
+      "value": "New mobile confirmed as primary; text consent given (verbal)",
+      "source": "call · CP-3002"
+     },
+     {
+      "label": "Asthma control",
+      "value": "Daily rescue use; controller lapsed since June",
+      "source": "call · RX-3001 · RX-3006"
+     },
+     {
+      "label": "Barrier",
+      "value": "Cost misunderstanding; night-shift schedule; no after-hours option",
+      "source": "call"
+     },
+     {
+      "label": "Plan",
+      "value": "PCP video visit (afternoon) via verified number; controller refill; asthma action plan; 24/7 nurse line and urgent-care info",
+      "source": "call · DIR-0003"
+     }
+    ],
+    "tasks": [
+     {
+      "task": "Confirm HIE identity match CG-901455",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Cancel 'unable to reach' auto-closure; update primary phone",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Book PCP video visit (afternoon) + controller refill",
+      "owner": "Maria",
+      "due": "Tue 10 Nov"
+     },
+     {
+      "task": "Text 24/7 nurse line and urgent care options",
+      "owner": "Maria",
+      "due": "Today"
+     }
+    ]
+   },
+   "recordIds": [
+    "ADT-0010",
+    "ADT-0011",
+    "ADT-0012",
+    "ADT-0013",
+    "ADT-0014",
+    "ADT-0015",
+    "AT-3001",
+    "AT-3005",
+    "CLM-3000",
+    "CLM-3001",
+    "CLM-3002",
+    "CN-3001",
+    "CP-3001",
+    "CP-3002",
+    "DIR-0003",
+    "HIE-3001",
+    "HIE-3002",
+    "RX-3001",
+    "RX-3006"
+   ],
+   "score": 4.8,
+   "rank": 4
+  },
+  {
+   "id": "P2",
+   "member": "SYN-M-31876",
+   "name": "Luis Ortega",
+   "age": 61,
+   "sex": "M",
+   "plan": "Medicare Advantage PPO",
+   "program": "Rising-risk diabetes",
+   "pcp": "Dr. Priya Nair",
+   "language": "English on file · prefers Spanish",
+   "languageFlag": true,
+   "authRep": "—",
+   "hero": true,
+   "risk": 3,
+   "window": 1,
+   "reach": 1.0,
+   "why": [
+    "Metformin 21 days late",
+    "A1c 8.1 → 9.4",
+    "Answers at lunch, in Spanish"
+   ],
+   "nba": "Call at 12:30 in Spanish. Explore side effects and cost; loop in PCP",
+   "scenario": "Rising-risk diabetic who quietly stopped one refill",
+   "contacts": [
+    {
+     "id": "CP-2001",
+     "number": "(312) 555-0163",
+     "type": "Mobile",
+     "owner": "Luis (member)",
+     "source": "ELIG",
+     "updated": "2024-01-15",
+     "lastSuccess": "2026-07-14",
+     "bestTime": "Mon/Wed 12:30–13:00",
+     "textConsent": "Yes",
+     "status": "Active",
+     "rank": 1,
+     "note": "Answers in Spanish"
+    }
+   ],
+   "signals": [
+    {
+     "code": "S4",
+     "title": "Refills lapsing, risk rising",
+     "confidence": "High · pharmacy + lab trend",
+     "measure": "Part D diabetes adherence (PDC ≥80%, triple-weighted)",
+     "mode": "Auto-detected · Maria confirms",
+     "rule": "Refill ≥15 days late or PDC trending <80%, AND A1c up ≥0.5",
+     "evidence": [
+      {
+       "rec": "RX-2002",
+       "src": "RX",
+       "text": "Metformin ER 1000 mg last filled 19 Sep (30 days): 21 days overdue"
+      },
+      {
+       "rec": "LAB-2002",
+       "src": "LAB",
+       "text": "A1c 9.4% on 22 Oct (was 8.1% in April, LAB-2001)"
+      },
+      {
+       "rec": "RISK-2",
+       "src": "RISK",
+       "text": "PDC year-to-date 0.74, below the 0.80 Star threshold"
+      }
+     ],
+     "guards": [
+      "Mail-order checked: enrolled, but no metformin shipment pending (only empagliflozin)",
+      "Not hospitalised (no ADT)"
+     ],
+     "actions": [
+      "Call Mon/Wed 12:30 in Spanish",
+      "Ask why he stopped: side effects, cost, or confusion",
+      "Message PCP with the reason; ask about alternatives",
+      "Offer 90-day supply once settled"
+     ]
+    },
+    {
+     "code": "S3",
+     "title": "Medication lists disagree",
+     "confidence": "Medium · note vs. fill",
+     "measure": "Medication reconciliation",
+     "mode": "Auto-flagged · Maria decides",
+     "rule": "Same drug differs in dose or form across sources",
+     "evidence": [
+      {
+       "rec": "RX-2002",
+       "src": "RX",
+       "text": "Pharmacy: metformin ER 1000 mg once daily"
+      },
+      {
+       "rec": "HIE-2001",
+       "src": "HIE",
+       "text": "PCP note 22 Oct: 'metformin 500 mg twice daily, stopped ~2 weeks ago (GI upset)'"
+      }
+     ],
+     "guards": [],
+     "actions": [
+      "Confirm on the call which tablets he has",
+      "Send the reconciled list to Dr. Nair"
+     ]
+    }
+   ],
+   "suppressed": [],
+   "conflicts": [
+    {
+     "topic": "Metformin",
+     "severity": "Check",
+     "a": {
+      "src": "RX",
+      "rec": "RX-2002",
+      "value": "ER 1000 mg once daily",
+      "at": "19 Sep"
+     },
+     "b": {
+      "src": "HIE",
+      "rec": "HIE-2001",
+      "value": "500 mg twice daily, stopped",
+      "at": "22 Oct"
+     },
+     "note": "PCP list may be out of date; the reason (GI upset) matters more than the dose."
+    },
+    {
+     "topic": "Language",
+     "severity": "Check",
+     "a": {
+      "src": "ELIG",
+      "rec": "ELIG",
+      "value": "English",
+      "at": "enrolment"
+     },
+     "b": {
+      "src": "CASE",
+      "rec": "CN-2001",
+      "value": "Prefers Spanish for health discussions",
+      "at": "14 Jul"
+     },
+     "note": "One click corrects the eligibility record."
+    },
+    {
+     "topic": "A1c, two feeds",
+     "severity": "Resolved",
+     "a": {
+      "src": "LAB",
+      "rec": "LAB-2002",
+      "value": "9.4 %",
+      "at": "22 Oct"
+     },
+     "b": {
+      "src": "LAB",
+      "rec": "LAB-2003",
+      "value": "79 mmol/mol",
+      "at": "22 Oct"
+     },
+     "note": "Same test in different units (LOINC 4548-4 vs 59261-8): counted once automatically."
+    }
+   ],
+   "meds": [
+    {
+     "name": "Metformin ER 1000 mg",
+     "clinical": "PCP: 500 mg BID, stopped",
+     "pharmacy": "Filled 19 Sep, 30 days",
+     "status": "21 days overdue",
+     "rec": "RX-2002"
+    },
+    {
+     "name": "Empagliflozin 10 mg",
+     "clinical": "Continue",
+     "pharmacy": "Mail order 15 Aug, 90 days",
+     "status": "OK",
+     "rec": "RX-2001"
+    },
+    {
+     "name": "Atorvastatin 40 mg",
+     "clinical": "Continue",
+     "pharmacy": "Filled 25 Oct",
+     "status": "OK",
+     "rec": "RX-2003"
+    }
+   ],
+   "missing": [
+    {
+     "what": "Urine albumin (kidney health)",
+     "expected": "Ordered 22 Oct, no result",
+     "action": "Remind at call"
+    }
+   ],
+   "labs": [
+    {
+     "test": "A1c",
+     "value": "9.4 %",
+     "flag": "H",
+     "at": "22 Oct",
+     "rec": "LAB-2002",
+     "note": "Arrived 14 days after the draw"
+    },
+    {
+     "test": "A1c (earlier)",
+     "value": "8.1 %",
+     "flag": "H",
+     "at": "15 Apr",
+     "rec": "LAB-2001",
+     "note": ""
+    },
+    {
+     "test": "eGFR",
+     "value": "68",
+     "flag": "",
+     "at": "22 Oct",
+     "rec": "LAB-2004",
+     "note": ""
+    }
+   ],
+   "gaps": [
+    "Part D diabetes adherence: PDC 0.74",
+    "Kidney health evaluation (KED)",
+    "Eye exam"
+   ],
+   "timeline": [
+    {
+     "at": "2026-04-15",
+     "src": "LAB",
+     "rec": "LAB-2001",
+     "text": "A1c 8.1%",
+     "received": "17 Apr",
+     "visible": true
+    },
+    {
+     "at": "2026-07-14 12:40",
+     "src": "CON",
+     "rec": "AT-2001",
+     "text": "Call answered (Spanish)",
+     "received": "14 Jul",
+     "visible": true
+    },
+    {
+     "at": "2026-09-19",
+     "src": "RX",
+     "rec": "RX-2002",
+     "text": "Last metformin fill (30 days)",
+     "received": "19 Sep",
+     "visible": true
+    },
+    {
+     "at": "2026-10-19",
+     "src": "RX",
+     "rec": "RX-2002",
+     "text": "Metformin refill due: not filled",
+     "received": "—",
+     "visible": true
+    },
+    {
+     "at": "2026-10-22",
+     "src": "HIE",
+     "rec": "HIE-2001",
+     "text": "PCP visit note: stopped metformin (GI upset)",
+     "received": "5 Nov (14 days)",
+     "visible": true,
+     "flag": "IMP-P2-02"
+    },
+    {
+     "at": "2026-10-22",
+     "src": "LAB",
+     "rec": "LAB-2002",
+     "text": "A1c 9.4% (same result also as 79 mmol/mol)",
+     "received": "5 Nov",
+     "visible": true,
+     "flag": "IMP-P2-03"
+    },
+    {
+     "at": "2026-11-04",
+     "src": "CLM",
+     "rec": "CLM-2002",
+     "text": "Claim for 22 Oct visit received (13 days)",
+     "received": "4 Nov",
+     "visible": true,
+     "flag": "IMP-P2-04"
+    }
+   ],
+   "sources": [
+    [
+     "RX",
+     "25 Oct"
+    ],
+    [
+     "LAB",
+     "5 Nov"
+    ],
+    [
+     "HIE",
+     "5 Nov"
+    ],
+    [
+     "CLM",
+     "4 Nov"
+    ],
+    [
+     "RISK",
+     "1 Nov"
+    ],
+    [
+     "SDOH",
+     "20 Jan (293 days)"
+    ]
+   ],
+   "transcript": "Mon 9 Nov 12:35 · Maria calls (312) 555-0163 with a Spanish interpreter.\nMaria: Hello Mr. Ortega, it's Maria, your nurse. Is now a good time? Your lunch break?\nLuis: Yes, ten minutes.\nMaria: I see your metformin hasn't been refilled since September. How is it going with that one?\nLuis: I stopped it. My stomach, diarrhea at work. On a construction site it's hard.\nMaria: I'm sorry, that sounds really hard. Did you tell Dr. Nair?\nLuis: In October, yes. She said maybe another medicine but I didn't hear back.\nMaria: Are you still taking the Jardiance and the cholesterol pill?\nLuis: Yes, those are fine. The Jardiance comes by mail.\nMaria: Sometimes money is tight for food or medicine. How is that for you?\nLuis: Food sometimes, end of the month. Medicine is OK.\nMaria: I'll send Dr. Nair a message today about other options for your sugar. Also you have a urine test ordered; can you do it this week?\nLuis: Friday morning, before work.",
+   "cachedBrief": {
+    "lines": [
+     {
+      "text": "Metformin ER 1000 mg last filled 19 Sep; 21 days overdue; year-to-date PDC 0.74 (below 0.80).",
+      "cites": [
+       "RX-2002",
+       "RISK-2"
+      ]
+     },
+     {
+      "text": "A1c rose from 8.1% (Apr) to 9.4% (22 Oct).",
+      "cites": [
+       "LAB-2001",
+       "LAB-2002"
+      ]
+     },
+     {
+      "text": "PCP note says he stopped metformin about 2 weeks before 22 Oct because of GI upset; the PCP lists 500 mg twice daily, the pharmacy shows ER 1000 mg.",
+      "cites": [
+       "HIE-2001",
+       "RX-2002"
+      ]
+     },
+     {
+      "text": "Prefers Spanish (eligibility says English); answers Mon/Wed 12:30–13:00.",
+      "cites": [
+       "CN-2001",
+       "CP-2001"
+      ]
+     },
+     {
+      "text": "Self-reported food insecurity 'sometimes' (Jan HRA); urine albumin ordered, no result yet.",
+      "cites": [
+       "SD-2001",
+       "HIE-2001"
+      ]
+     }
+    ],
+    "questions": [
+     "What happened when you took metformin?",
+     "Did Dr. Nair suggest anything else?",
+     "Are the other two medicines OK?",
+     "Can you do the urine test this week?"
+    ]
+   },
+   "cachedNote": {
+    "summary": "Lunch-break call in Spanish (interpreter). Stopped metformin in October because of diarrhoea at work; told PCP, no follow-up received. Taking empagliflozin (mail order) and atorvastatin. Food insecurity at month-end. Agreed to urine test Friday.",
+    "fields": [
+     {
+      "label": "Medication reconciliation",
+      "value": "Metformin: stopped (GI intolerance) · Empagliflozin 10 mg: taking · Atorvastatin 40 mg: taking",
+      "source": "call · RX-2001 · RX-2002 · RX-2003"
+     },
+     {
+      "label": "Adherence barrier",
+      "value": "Side effects (not cost, not confusion)",
+      "source": "call"
+     },
+     {
+      "label": "Social needs",
+      "value": "Food insecurity at month-end",
+      "source": "call · SD-2001"
+     },
+     {
+      "label": "Preferred language",
+      "value": "Spanish: update eligibility record",
+      "source": "call · CN-2001"
+     },
+     {
+      "label": "Care gaps",
+      "value": "Urine albumin Friday morning (KED)",
+      "source": "call · HIE-2001"
+     }
+    ],
+    "tasks": [
+     {
+      "task": "Message Dr. Nair: GI intolerance to metformin, A1c 9.4%; ask about an alternative",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Update language preference to Spanish",
+      "owner": "Maria",
+      "due": "Today"
+     },
+     {
+      "task": "Share food benefit / food bank options",
+      "owner": "Maria",
+      "due": "Wed 11 Nov"
+     },
+     {
+      "task": "Check urine albumin result",
+      "owner": "Maria",
+      "due": "Mon 16 Nov"
+     }
+    ]
+   },
+   "recordIds": [
+    "AT-2001",
+    "CLM-2002",
+    "CN-2001",
+    "CP-2001",
+    "HIE-2001",
+    "LAB-2001",
+    "LAB-2002",
+    "LAB-2003",
+    "LAB-2004",
+    "RISK-2",
+    "RX-2001",
+    "RX-2002",
+    "RX-2003",
+    "SD-2001"
+   ],
+   "score": 3.0,
+   "rank": 5
+  },
+  {
+   "id": "S7",
+   "member": "SYN-M-72251",
+   "name": "Ana Lima",
+   "age": 29,
+   "sex": "F",
+   "plan": "Medicaid managed care",
+   "program": "Maternity · high risk",
+   "pcp": "Dr. Rosa Diaz",
+   "language": "Portuguese",
+   "authRep": "—",
+   "hero": false,
+   "risk": 3,
+   "window": 1,
+   "reach": 0.9,
+   "why": [
+    "32 weeks; Friday visit already rebooked",
+    "BP log check",
+    "Answers mornings (Portuguese)"
+   ],
+   "nba": "Routine: confirm Tue visit, review home BP log",
+   "scenario": "Supporting: high-risk pregnancy, visit already rebooked by the clinic",
+   "contacts": [
+    {
+     "id": "CP-7001",
+     "number": "(312) 555-0166",
+     "type": "Mobile",
+     "owner": "Ana (member)",
+     "source": "ELIG",
+     "updated": "2026-02-01",
+     "lastSuccess": "2026-10-24",
+     "bestTime": "Mornings · Portuguese",
+     "textConsent": "Yes",
+     "status": "Active",
+     "rank": 1,
+     "note": ""
+    }
+   ],
+   "signals": [],
+   "suppressed": [],
+   "conflicts": [],
+   "meds": [
+    {
+     "name": "Aspirin 81 mg",
+     "clinical": "Daily",
+     "pharmacy": "Filled 15 Oct",
+     "status": "OK",
+     "rec": "RX-7001"
+    }
+   ],
+   "missing": [],
+   "labs": [],
+   "gaps": [],
+   "timeline": [
+    {
+     "at": "2026-10-23",
+     "src": "CLM",
+     "rec": "CLM-7001",
+     "text": "Prenatal visit (high-risk supervision)",
+     "received": "3 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-11-06 15:30",
+     "src": "CASE",
+     "rec": "CN-7001",
+     "text": "Clinic: missed Fri visit rebooked Tue 10 Nov 10:00",
+     "received": "6 Nov",
+     "visible": true
+    }
+   ],
+   "sources": [
+    [
+     "CLM",
+     "3 Nov"
+    ],
+    [
+     "RX",
+     "15 Oct"
+    ],
+    [
+     "CASE",
+     "6 Nov"
+    ]
+   ],
+   "recordIds": [
+    "CLM-7001",
+    "CN-7001",
+    "RX-7001"
+   ],
+   "score": 2.7,
+   "rank": 6
+  },
+  {
+   "id": "S9",
+   "member": "SYN-M-74490",
+   "name": "Grace Owusu",
+   "age": 58,
+   "sex": "F",
+   "plan": "Medicare Advantage HMO",
+   "program": "Complex CM · CKD stage 4",
+   "pcp": "Dr. Grace Liu",
+   "language": "English",
+   "authRep": "—",
+   "hero": false,
+   "risk": 3,
+   "window": 1,
+   "reach": 0.8,
+   "why": [
+    "Nephrology visit 17 Nov",
+    "Ride to confirm",
+    "Often at education sessions"
+   ],
+   "nba": "Confirm ride for 17 Nov nephrology visit",
+   "scenario": "Supporting: CKD stage 4, dialysis planning",
+   "contacts": [
+    {
+     "id": "CP-9001",
+     "number": "(312) 555-0181",
+     "type": "Home",
+     "owner": "Grace (member)",
+     "source": "ELIG",
+     "updated": "2021-05-01",
+     "lastSuccess": "2026-10-13",
+     "bestTime": "Afternoons",
+     "textConsent": "n/a",
+     "status": "Active, missed ×1",
+     "rank": 1,
+     "note": ""
+    }
+   ],
+   "signals": [],
+   "suppressed": [],
+   "conflicts": [],
+   "meds": [
+    {
+     "name": "Sevelamer 800 mg",
+     "clinical": "With meals",
+     "pharmacy": "Filled 30 Oct",
+     "status": "OK",
+     "rec": "RX-9001"
+    }
+   ],
+   "missing": [],
+   "labs": [],
+   "gaps": [],
+   "timeline": [
+    {
+     "at": "2026-10-12",
+     "src": "LAB",
+     "rec": "LAB-9001",
+     "text": "eGFR 22 (CKD 4)",
+     "received": "14 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-13 15:00",
+     "src": "CASE",
+     "rec": "CN-9001",
+     "text": "Dialysis options visit 17 Nov; needs a ride",
+     "received": "13 Oct",
+     "visible": true
+    }
+   ],
+   "sources": [
+    [
+     "LAB",
+     "14 Oct"
+    ],
+    [
+     "RX",
+     "30 Oct"
+    ],
+    [
+     "CASE",
+     "13 Oct"
+    ]
+   ],
+   "recordIds": [
+    "CN-9001",
+    "LAB-9001",
+    "RX-9001"
+   ],
+   "score": 2.4,
+   "rank": 7
+  },
+  {
+   "id": "S6",
+   "member": "SYN-M-71104",
+   "name": "Walter Kim",
+   "age": 71,
+   "sex": "M",
+   "plan": "Medicare Advantage HMO",
+   "program": "Disease management · COPD",
+   "pcp": "Dr. Alan Mercer",
+   "language": "English",
+   "authRep": "—",
+   "hero": false,
+   "risk": 2,
+   "window": 1,
+   "reach": 1.0,
+   "why": [
+    "Routine monthly touch",
+    "Inhaler on time",
+    "No ED since Feb"
+   ],
+   "nba": "Routine check-in this week",
+   "scenario": "Supporting: stable COPD",
+   "contacts": [
+    {
+     "id": "CP-6001",
+     "number": "(312) 555-0151",
+     "type": "Home",
+     "owner": "Walter (member)",
+     "source": "ELIG",
+     "updated": "2020-03-01",
+     "lastSuccess": "2026-10-06",
+     "bestTime": "Mornings",
+     "textConsent": "n/a",
+     "status": "Active",
+     "rank": 1,
+     "note": ""
+    }
+   ],
+   "signals": [],
+   "suppressed": [],
+   "conflicts": [],
+   "meds": [
+    {
+     "name": "Tiotropium",
+     "clinical": "Daily",
+     "pharmacy": "Filled 28 Oct",
+     "status": "OK",
+     "rec": "RX-6001"
+    }
+   ],
+   "missing": [],
+   "labs": [],
+   "gaps": [],
+   "timeline": [
+    {
+     "at": "2026-10-05",
+     "src": "CLM",
+     "rec": "CLM-6001",
+     "text": "PCP visit (COPD)",
+     "received": "20 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-28",
+     "src": "RX",
+     "rec": "RX-6001",
+     "text": "Tiotropium filled on time",
+     "received": "28 Oct",
+     "visible": true
+    }
+   ],
+   "sources": [
+    [
+     "CLM",
+     "20 Oct"
+    ],
+    [
+     "RX",
+     "28 Oct"
+    ]
+   ],
+   "recordIds": [
+    "CLM-6001",
+    "RX-6001"
+   ],
+   "score": 2.0,
+   "rank": 8
+  },
+  {
+   "id": "S8",
+   "member": "SYN-M-73318",
+   "name": "Frank Dobbs",
+   "age": 66,
+   "sex": "M",
+   "plan": "Medicare Advantage PPO",
+   "program": "Transitions of care · orthopaedics",
+   "pcp": "Dr. Priya Nair",
+   "language": "English",
+   "authRep": "—",
+   "hero": false,
+   "risk": 2,
+   "window": 1,
+   "reach": 1.0,
+   "why": [
+    "Home health approved",
+    "PT going well",
+    "Clot-prevention course ends 22 Nov"
+   ],
+   "nba": "No action today",
+   "scenario": "Supporting: post hip replacement",
+   "contacts": [
+    {
+     "id": "CP-8001",
+     "number": "(312) 555-0172",
+     "type": "Mobile",
+     "owner": "Frank (member)",
+     "source": "ELIG",
+     "updated": "2022-09-01",
+     "lastSuccess": "2026-10-28",
+     "bestTime": "Afternoons",
+     "textConsent": "Yes",
+     "status": "Active",
+     "rank": 1,
+     "note": ""
+    }
+   ],
+   "signals": [],
+   "suppressed": [],
+   "conflicts": [],
+   "meds": [
+    {
+     "name": "Apixaban 2.5 mg (35-day post-op)",
+     "clinical": "Twice daily",
+     "pharmacy": "Filled 18 Oct",
+     "status": "OK",
+     "rec": "RX-8001"
+    }
+   ],
+   "missing": [],
+   "labs": [],
+   "gaps": [],
+   "timeline": [
+    {
+     "at": "2026-10-15",
+     "src": "CLM",
+     "rec": "CLM-8001",
+     "text": "Hip replacement stay",
+     "received": "2 Nov",
+     "visible": true
+    },
+    {
+     "at": "2026-10-18",
+     "src": "UM",
+     "rec": "UM-8001",
+     "text": "Home health PT approved",
+     "received": "18 Oct",
+     "visible": true
+    }
+   ],
+   "sources": [
+    [
+     "CLM",
+     "2 Nov"
+    ],
+    [
+     "UM",
+     "25 Oct"
+    ],
+    [
+     "RX",
+     "18 Oct"
+    ]
+   ],
+   "recordIds": [
+    "CLM-8001",
+    "RX-8001",
+    "UM-8001"
+   ],
+   "score": 2.0,
+   "rank": 9
+  },
+  {
+   "id": "S10",
+   "member": "SYN-M-75562",
+   "name": "Henry Walsh",
+   "age": 80,
+   "sex": "M",
+   "plan": "Medicare Advantage HMO",
+   "program": "Disease management · heart failure",
+   "pcp": "Dr. Alan Mercer",
+   "language": "English",
+   "authRep": "—",
+   "hero": false,
+   "risk": 2,
+   "window": 1,
+   "reach": 0.8,
+   "why": [
+    "Weights stable 6 weeks",
+    "Entresto filled on time",
+    "Routine monthly call"
+   ],
+   "nba": "Routine check-in; weight log",
+   "scenario": "Supporting: stable heart failure (the contrast case to Dorothy)",
+   "contacts": [
+    {
+     "id": "CP-1101",
+     "number": "(312) 555-0189",
+     "type": "Home",
+     "owner": "Henry (member)",
+     "source": "ELIG",
+     "updated": "2019-01-01",
+     "lastSuccess": "2026-10-12",
+     "bestTime": "Late morning",
+     "textConsent": "n/a",
+     "status": "Active, missed ×1",
+     "rank": 1,
+     "note": ""
+    }
+   ],
+   "signals": [],
+   "suppressed": [],
+   "conflicts": [],
+   "meds": [
+    {
+     "name": "Sacubitril/valsartan 49/51 mg",
+     "clinical": "Twice daily",
+     "pharmacy": "Filled 30 Oct",
+     "status": "OK",
+     "rec": "RX-1101"
+    }
+   ],
+   "missing": [],
+   "labs": [],
+   "gaps": [],
+   "timeline": [
+    {
+     "at": "2026-09-20",
+     "src": "CLM",
+     "rec": "CLM-1101",
+     "text": "Cardiology visit",
+     "received": "2 Oct",
+     "visible": true
+    },
+    {
+     "at": "2026-10-30",
+     "src": "RX",
+     "rec": "RX-1101",
+     "text": "Sacubitril/valsartan filled on time",
+     "received": "30 Oct",
+     "visible": true
+    }
+   ],
+   "sources": [
+    [
+     "CLM",
+     "2 Oct"
+    ],
+    [
+     "RX",
+     "30 Oct"
+    ]
+   ],
+   "recordIds": [
+    "CLM-1101",
+    "RX-1101"
+   ],
+   "score": 1.6,
+   "rank": 10
+  }
+ ],
+ "flaws": [
+  {
+   "id": "IMP-P1-01",
+   "patient": "P1",
+   "flaw": "Duplicate ADT discharge message",
+   "handled": "Merged; one task"
+  },
+  {
+   "id": "IMP-P1-02",
+   "patient": "P1",
+   "flaw": "Stopped lisinopril auto-refilled",
+   "handled": "S3 unsafe-combination flag"
+  },
+  {
+   "id": "IMP-P1-03",
+   "patient": "P1",
+   "flaw": "Entresto rejected (NCPDP 75), no coverage request",
+   "handled": "Reason shown; expedited route suggested"
+  },
+  {
+   "id": "IMP-P1-04",
+   "patient": "P1",
+   "flaw": "Admission not in claims until ~4 Dec",
+   "handled": "Ranked #1 from ADT + HIE anyway"
+  },
+  {
+   "id": "IMP-P1-05",
+   "patient": "P1",
+   "flaw": "HRA 'spouse drives' is stale",
+   "handled": "Newer note wins; ride offered"
+  },
+  {
+   "id": "IMP-P2-01",
+   "patient": "P2",
+   "flaw": "Language on file wrong",
+   "handled": "Spanish shown; one-click correction"
+  },
+  {
+   "id": "IMP-P2-02",
+   "patient": "P2",
+   "flaw": "Metformin dose differs: pharmacy vs PCP",
+   "handled": "Side-by-side conflict"
+  },
+  {
+   "id": "IMP-P2-03",
+   "patient": "P2",
+   "flaw": "A1c in two units; late",
+   "handled": "Counted once (LOINC)"
+  },
+  {
+   "id": "IMP-P2-04",
+   "patient": "P2",
+   "flaw": "Visit claim 13 days late",
+   "handled": "HIE note used first"
+  },
+  {
+   "id": "IMP-P3-01",
+   "patient": "P3",
+   "flaw": "New MRN, name spelled 'Keysha'",
+   "handled": "Match 0.86; Maria confirms"
+  },
+  {
+   "id": "IMP-P3-02",
+   "patient": "P3",
+   "flaw": "Home number dead; new mobile in pharmacy",
+   "handled": "New number ranked first"
+  },
+  {
+   "id": "IMP-P3-03",
+   "patient": "P3",
+   "flaw": "Claims show 1 of 3 ED visits",
+   "handled": "ED count from ADT"
+  },
+  {
+   "id": "IMP-P3-04",
+   "patient": "P3",
+   "flaw": "PCP clinic moved; directory outdated",
+   "handled": "HiLabs-verified number used"
+  },
+  {
+   "id": "IMP-P3-05",
+   "patient": "P3",
+   "flaw": "Case set to auto-close as unreachable",
+   "handled": "Closure paused"
+  },
+  {
+   "id": "IMP-P4-01",
+   "patient": "P4",
+   "flaw": "Shelter address vs 'stable housing'",
+   "handled": "Conflict + re-screen"
+  },
+  {
+   "id": "IMP-P4-02",
+   "patient": "P4",
+   "flaw": "Prepaid phone; shelter needs release",
+   "handled": "Text first; shelter call locked"
+  },
+  {
+   "id": "IMP-P4-03",
+   "patient": "P4",
+   "flaw": "Part 2 SUD record, no consent",
+   "handled": "Content hidden"
+  },
+  {
+   "id": "IMP-P4-04",
+   "patient": "P4",
+   "flaw": "Follow-up 'to be arranged'",
+   "handled": "FUH countdown + verified slot"
+  },
+  {
+   "id": "IMP-P4-05",
+   "patient": "P4",
+   "flaw": "Blood-pressure med lapsed since August",
+   "handled": "Listed as secondary"
+  },
+  {
+   "id": "IMP-P5-01",
+   "patient": "P5",
+   "flaw": "ED list apixaban 5 mg vs 2.5 mg",
+   "handled": "Conflict; dose criteria shown"
+  },
+  {
+   "id": "IMP-P5-02",
+   "patient": "P5",
+   "flaw": "Mail-order refill not yet in feed (trap)",
+   "handled": "No alarm; confirm on call"
+  },
+  {
+   "id": "IMP-P5-03",
+   "patient": "P5",
+   "flaw": "Caregiver strain only in notes",
+   "handled": "AI flag; Maria confirms"
+  },
+  {
+   "id": "IMP-P5-04",
+   "patient": "P5",
+   "flaw": "HRA never asks about caregiver",
+   "handled": "Question added to call prep"
+  },
+  {
+   "id": "IMP-P5-05",
+   "patient": "P5",
+   "flaw": "Home-health auth pending 90 h",
+   "handled": "Hours vs clock; escalate"
+  }
+ ],
+ "feeds": [
+  [
+   "ADT",
+   "8 Nov 00:05",
+   "minutes"
+  ],
+  [
+   "RX",
+   "7 Nov 10:02",
+   "daily"
+  ],
+  [
+   "HIE",
+   "8 Nov 07:40",
+   "hours–days"
+  ],
+  [
+   "LAB",
+   "7 Nov",
+   "days"
+  ],
+  [
+   "UM",
+   "5 Nov",
+   "real time"
+  ],
+  [
+   "CON",
+   "8 Nov",
+   "real time"
+  ],
+  [
+   "CLM",
+   "4 Nov",
+   "30–90 day lag"
+  ],
+  [
+   "SDOH",
+   "up to 293 days old",
+   "yearly"
+  ]
+ ]
+}
