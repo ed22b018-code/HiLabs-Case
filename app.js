@@ -160,7 +160,7 @@ function alerts(p) {
     ${S.utr[p.id] ? '' : `<button class="btn sm teal" data-act="utr">Pause closure</button>`}</div>`);
   if (p.fuh) {
     const days = ['Wed 4', 'Thu 5', 'Fri 6', 'Sat 7', 'Sun 8', 'Mon 9', 'Tue 10', 'Wed 11'];
-    a.push(`<div class="alert o" id="fuh">${ico('clock')}<div class="tx"><b>7-day follow-up after psychiatric discharge (HEDIS FUH): window closes ${esc(p.fuh.closes)}, nothing booked</b>
+    a.push(`<div class="alert o" id="fuh">${ico('clock')}<div class="tx"><b>7-day follow-up after psychiatric discharge (a quality deadline): window closes ${esc(p.fuh.closes)}, nothing booked</b>
       <small>Verified open slot: ${esc(p.fuh.slot)} ${recChip('DIR-0004', p.id)} ${flaw('IMP-P4-04')}</small></div>
       <div class="countdown">${days.map((d, i) => `<span class="${i < 5 ? 'past' : i === 5 ? 'today' : i === 7 ? 'end' : ''}" title="${d} Nov">${d.split(' ')[1]}</span>`).join('')}</div></div>`);
   }
